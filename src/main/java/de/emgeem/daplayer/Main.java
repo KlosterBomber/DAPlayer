@@ -1,7 +1,6 @@
 package de.emgeem.daplayer;
 
 import de.emgeem.daplayer.ui.DAPlayerView;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;

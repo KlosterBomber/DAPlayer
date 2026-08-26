@@ -17,18 +17,18 @@ public class VolumeKnob extends Canvas {
     // GEOMETRIE
     // ============================================================
 
-    private static final double OUTER = 200;
+    private static final double OUTER = 220;
 
     // LED-RING
-    private static final double LED_OUTER = 174;
-    private static final double LED_INNER = 160;
+    private static final double LED_OUTER = 194;
+    private static final double LED_INNER = 180;
 
     // ALU-RING
-    private static final double ALU_OUTER = 160;
-    private static final double ALU_INNER = 148;
+    private static final double ALU_OUTER = 180;
+    private static final double ALU_INNER = 168;
 
     // KAPPE
-    private static final double INNER = 140;
+    private static final double INNER = 160;
 
     private static final Font BUTTON_FONT = Font.loadFont(RoundControlButton.class.getResourceAsStream("/fonts/SairaStencil_Condensed-Black.ttf"), 22);
     private final String text;

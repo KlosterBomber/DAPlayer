@@ -16,14 +16,14 @@ public class RoundControlButton extends Canvas {
     // GEOMETRIE
     // ============================================================
 
-    private static final double OUTER = 100;
+    private static final double OUTER = 110;
 
     // LED-RING
-    private static final double LED_OUTER = 87;
-    private static final double LED_INNER = 80;
+    private static final double LED_OUTER = 97;
+    private static final double LED_INNER = 90;
 
     // KAPPE
-    private static final double INNER = 70;
+    private static final double INNER = 80;
 
     private static final Font BUTTON_FONT = Font.loadFont(RoundControlButton.class.getResourceAsStream("/fonts/SairaStencil_Condensed-Black.ttf"), 18);
     private final String text;
