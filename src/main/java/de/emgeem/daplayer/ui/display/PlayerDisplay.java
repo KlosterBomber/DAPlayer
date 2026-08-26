@@ -14,7 +14,7 @@ public class PlayerDisplay extends Canvas {
 
         super(width, height);
 
-        displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),40);
+        displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/BitcountPropSingle-Regular.ttf"),40);
 
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
         heightProperty().addListener((obs, oldValue, newValue) -> draw());

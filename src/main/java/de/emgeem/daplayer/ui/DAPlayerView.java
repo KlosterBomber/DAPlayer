@@ -1,10 +1,12 @@
 package de.emgeem.daplayer.ui;
 
 import de.emgeem.daplayer.ui.background.PlayerViewBackground;
+import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.VolumeKnob;
 import de.emgeem.daplayer.ui.display.PlayerDisplay;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 public class DAPlayerView extends StackPane {
@@ -15,6 +17,7 @@ public class DAPlayerView extends StackPane {
     private static final double CONTROL_TOP_MARGIN = 15;
     private static final double CONTROL_BOTTOM_MARGIN = 15;
     private static final double CONTROL_AREA_HEIGHT = 240;
+    private static final double CONTROL_SPACING = 35;
 
 
     public DAPlayerView() {
@@ -40,9 +43,20 @@ public class DAPlayerView extends StackPane {
         controlArea.setAlignment(Pos.CENTER);
         controlArea.setPadding(new Insets(CONTROL_TOP_MARGIN, 0, CONTROL_BOTTOM_MARGIN, 0));
 
-        VolumeKnob volumeKnob = new VolumeKnob();
-        controlArea.getChildren().add(volumeKnob);
-        volumeKnob.setTranslateY(-25);
+        RoundControlButton previousButton = new RoundControlButton("PREV");
+        RoundControlButton stopButton = new RoundControlButton("STOP");
+        RoundControlButton playPauseButton = new RoundControlButton("PLAY/\nPAUSE");
+        RoundControlButton nextButton = new RoundControlButton("NEXT");    
+
+        VolumeKnob volumeKnob = new VolumeKnob("VOLUME");
+
+        HBox controlRow = new HBox();
+        controlRow.setAlignment(Pos.CENTER);
+        controlRow.setSpacing(CONTROL_SPACING);
+        controlRow.getChildren().addAll(previousButton, stopButton, volumeKnob, playPauseButton, nextButton);
+
+        controlArea.getChildren().add(controlRow);
+//        volumeKnob.setTranslateY(-10);
 
         StackPane.setAlignment(displayArea, Pos.TOP_CENTER);
         StackPane.setAlignment(controlArea, Pos.BOTTOM_CENTER);
