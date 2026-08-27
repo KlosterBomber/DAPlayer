@@ -13,11 +13,8 @@ import javafx.scene.text.TextAlignment;
 
 public class MenuButton extends Canvas {
 
-    public enum Shape {
-        LEFT, CENTER, RIGHT
-    }
+    public enum Shape {LEFT, CENTER, RIGHT, BOTH}
 
-    private static final double HEIGHT = 40;
     private static final double SLOPE = 10;
     private static final double INSET = 3;
 
@@ -26,8 +23,8 @@ public class MenuButton extends Canvas {
     private final String text;
     private final Shape shape;
 
-    public MenuButton(String text, double width, Shape shape) {
-        super(width, HEIGHT);
+    public MenuButton(String text, double width, double height, Shape shape) {
+        super(width, height);
         this.text = text;
         this.shape = shape;
         hoverProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -48,6 +45,8 @@ public class MenuButton extends Canvas {
             x = new double[] {0, w, w, SLOPE};
         } else if (shape == Shape.RIGHT) {
             x = new double[] {0, w, w - SLOPE, 0};
+        } else if (shape == Shape.BOTH) {
+            x = new double[] {0, w, w - SLOPE, SLOPE};
         } else {
             x = new double[] {0, w, w, 0};
         }
@@ -60,7 +59,9 @@ public class MenuButton extends Canvas {
             x = new double[] {INSET, w - INSET, w - INSET, SLOPE + INSET};
         } else if (shape == Shape.RIGHT) {
             x = new double[] {INSET, w - INSET, w - SLOPE - INSET, INSET};
-        } else {
+        } else if (shape == Shape.BOTH) {
+            x = new double[] {INSET, w - INSET, w - SLOPE - INSET, SLOPE + INSET};
+        }else {
             x = new double[] {INSET, w - INSET, w - INSET, INSET};
         }
         y = new double[] {INSET, INSET, h - INSET, h - INSET};
@@ -77,17 +78,26 @@ public class MenuButton extends Canvas {
         // OBERE LICHTKANTE
         gc.setStroke(Color.rgb(150, 150, 150, 0.25));
         gc.setLineWidth(1);
-        gc.strokeLine(shape == Shape.LEFT ? SLOPE + INSET : INSET, INSET, shape == Shape.RIGHT ? w - SLOPE - INSET : w - INSET, INSET);
+        gc.strokeLine(
+            shape == Shape.LEFT  || shape == Shape.BOTH ? SLOPE + INSET : INSET, INSET, 
+            shape == Shape.RIGHT  || shape == Shape.BOTH ? w - SLOPE - INSET : w - INSET, INSET
+        );
 
         // UNTERE SCHATTENKANTE
         gc.setStroke(Color.rgb(0, 0, 0, 0.9));
         gc.setLineWidth(2);
-        gc.strokeLine(shape == Shape.RIGHT ? INSET : SLOPE + INSET, h - INSET, shape == Shape.LEFT ? w - INSET : w - SLOPE - INSET, h - INSET);
+        gc.strokeLine(
+            shape == Shape.RIGHT  || shape == Shape.BOTH ? INSET : SLOPE + INSET, h - INSET, 
+            shape == Shape.LEFT  || shape == Shape.BOTH ? w - INSET : w - SLOPE - INSET, h - INSET
+        );
 
         // INNERE VERTIEFUNG
         gc.setStroke(Color.rgb(0, 0, 0, 0.45));
         gc.setLineWidth(1);
-        gc.strokeLine(shape == Shape.LEFT ? SLOPE + 4 : 4, h - 5, shape == Shape.RIGHT ? w - SLOPE - 4 : w - 4, h - 5);
+        gc.strokeLine(
+            shape == Shape.LEFT  || shape == Shape.BOTH ? SLOPE + 4 : 4, h - 5, 
+            shape == Shape.RIGHT  || shape == Shape.BOTH ? w - SLOPE - 4 : w - 4, h - 5
+        );
 
         // BESCHRIFTUNG
         gc.setFont(BUTTON_FONT);
