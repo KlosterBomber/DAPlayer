@@ -1,6 +1,9 @@
 package de.emgeem.daplayer.ui.display;
 
+import de.emgeem.daplayer.model.Playlist;
+import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.ui.painter.UiColors;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -9,6 +12,7 @@ import javafx.scene.text.Font;
 public class PlayerDisplay extends Canvas {
 
     private final Font displayFont;
+    private Playlist playlist;
 
     public PlayerDisplay(double width, double height) {
 
@@ -33,7 +37,7 @@ public class PlayerDisplay extends Canvas {
         gc.clearRect(0, 0, w, h);
 
         drawDisplay(gc, 0, 0, w, h);
-        drawTestText(gc, w, h);
+        drawTrackList(gc, w, h);
     }
 
 
@@ -76,4 +80,23 @@ public class PlayerDisplay extends Canvas {
         gc.fillText(text, x, y);
         gc.setEffect(null);
     }
+
+    private void drawTrackList(GraphicsContext gc, double w, double h) {
+        if (playlist == null) {return;}
+        gc.setFont(displayFont);
+        gc.setFill(UiColors.accentLight());
+        gc.setEffect(UiColors.displayGlow());
+        double y = 50;
+        for (Track track : playlist.getTracks()) {
+            gc.fillText(track.getFileName(), 30, y);
+            y += 45;
+        }
+        gc.setEffect(null);
+    }
+
+    public void setPlaylist(Playlist playlist) {
+        this.playlist = playlist;
+        draw();
+    }
+
 }

@@ -51,6 +51,7 @@ public class DAPlayerView extends StackPane {
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
         PlayerDisplay display = new PlayerDisplay(1158, DISPLAY_HEIGHT);
+        display.setPlaylist(playlist);
         display.widthProperty().bind(widthProperty().subtract(DISPLAY_SIDE_MARGIN * 2));
         displayArea.getChildren().add(display);
 
@@ -91,7 +92,8 @@ public class DAPlayerView extends StackPane {
             );
             List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
             if (files != null) {
-                for (File file : files) {playlist.addTrack(new Track(file));} 
+                for (File file : files) {playlist.addTrack(new Track(file));}
+                display.setPlaylist(playlist); 
                 System.out.println("Playlist: " + playlist.getName() + " (" + playlist.getTracks().size() + " tracks)");
             }
         });
