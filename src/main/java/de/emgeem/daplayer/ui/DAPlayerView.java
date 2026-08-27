@@ -21,6 +21,8 @@ public class DAPlayerView extends StackPane {
     private static final double CONTROL_AREA_HEIGHT = 240;
     private static final double CONTROL_SPACING = 50;
 
+    private double dragX;
+    private double dragY;
 
     public DAPlayerView() {
 
@@ -69,30 +71,54 @@ public class DAPlayerView extends StackPane {
         nextButton.setTranslateY(+25);
 
     // MENU BUTTONS
-        MenuButton offButton = new MenuButton("OFF", 150, MenuButton.Shape.LEFT);
-        MenuButton loadButton = new MenuButton("LOAD", 150, MenuButton.Shape.CENTER);
+        MenuButton openButton = new MenuButton("OPEN", 150, MenuButton.Shape.LEFT);
+        StackPane.setAlignment(openButton, Pos.TOP_LEFT);
+        openButton.setTranslateX(55);
+        openButton.setTranslateY(425);
+
+        MenuButton playlistButton = new MenuButton("PLAYLIST", 150, MenuButton.Shape.CENTER);
+        StackPane.setAlignment(playlistButton, Pos.TOP_LEFT);
+        playlistButton.setTranslateX(205);
+        playlistButton.setTranslateY(425);
+
         MenuButton settingsButton = new MenuButton("SETTINGS", 150, MenuButton.Shape.RIGHT);
-        MenuButton menuButton = new MenuButton("MENU", 150, MenuButton.Shape.LEFT);
-        MenuButton visualsButton = new MenuButton("VISUALS", 150, MenuButton.Shape.CENTER);
-        MenuButton reserveButton = new MenuButton("RESERVE", 150, MenuButton.Shape.RIGHT);
-        StackPane.setAlignment(offButton, Pos.TOP_LEFT);
-        StackPane.setAlignment(loadButton, Pos.TOP_LEFT);
         StackPane.setAlignment(settingsButton, Pos.TOP_LEFT);
-        StackPane.setAlignment(menuButton, Pos.TOP_RIGHT);
-        StackPane.setAlignment(visualsButton, Pos.TOP_RIGHT);
-        StackPane.setAlignment(reserveButton, Pos.TOP_RIGHT);
-        offButton.setTranslateX(55);
-        offButton.setTranslateY(425);
-        loadButton.setTranslateX(205);
-        loadButton.setTranslateY(425);
         settingsButton.setTranslateX(355);
         settingsButton.setTranslateY(425);
-        menuButton.setTranslateX(-355);
-        menuButton.setTranslateY(425);
+
+        MenuButton displayButton = new MenuButton("DISPLAY", 150, MenuButton.Shape.LEFT);
+        StackPane.setAlignment(displayButton, Pos.TOP_RIGHT);
+        displayButton.setTranslateX(-355);
+        displayButton.setTranslateY(425);
+
+        MenuButton visualsButton = new MenuButton("VISUALS", 150, MenuButton.Shape.CENTER);
+        StackPane.setAlignment(visualsButton, Pos.TOP_RIGHT);
         visualsButton.setTranslateX(-205);
         visualsButton.setTranslateY(425);
-        reserveButton.setTranslateX(-55);
-        reserveButton.setTranslateY(425);
+
+        MenuButton eqButton = new MenuButton("EQUALIZER", 150, MenuButton.Shape.RIGHT);
+        StackPane.setAlignment(eqButton, Pos.TOP_RIGHT);
+        eqButton.setTranslateX(-55);
+        eqButton.setTranslateY(425);
+
+        MenuButton offButton = new MenuButton("OFF", 50, MenuButton.Shape.CENTER);
+        offButton.setOnMouseClicked(e -> {getScene().getWindow().hide();});
+        StackPane.setAlignment(offButton, Pos.TOP_LEFT);
+        offButton.setTranslateX(30);
+        offButton.setTranslateY(605);
+
+        MenuButton moveButton = new MenuButton("MOVE", 50, MenuButton.Shape.CENTER);
+        moveButton.setOnMousePressed(e -> {
+            dragX = e.getScreenX() - getScene().getWindow().getX();
+            dragY = e.getScreenY() - getScene().getWindow().getY();
+        });
+        moveButton.setOnMouseDragged(e -> {
+            getScene().getWindow().setX(e.getScreenX() - dragX);
+            getScene().getWindow().setY(e.getScreenY() - dragY);
+        });
+        StackPane.setAlignment(moveButton, Pos.TOP_RIGHT);
+        moveButton.setTranslateX(-30);
+        moveButton.setTranslateY(605);
 
         StackPane.setAlignment(displayArea, Pos.TOP_CENTER);
         StackPane.setAlignment(controlArea, Pos.BOTTOM_CENTER);
@@ -103,13 +129,19 @@ public class DAPlayerView extends StackPane {
                 displayArea,
                 controlArea,
 
-                offButton,
-                loadButton,
+                openButton,
+                playlistButton,
                 settingsButton,
 
-                menuButton,
+                displayButton,
                 visualsButton,
-                reserveButton
+                eqButton,
+
+                offButton,
+                moveButton
         );
+
+        
+        
     }
 }

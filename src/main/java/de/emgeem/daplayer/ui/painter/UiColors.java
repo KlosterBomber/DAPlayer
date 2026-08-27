@@ -10,7 +10,7 @@ public final class UiColors {
 
     private static final Preferences PREFS = Preferences.userNodeForPackage(UiColors.class);
     private static final String ACCENT_KEY = "accentColor";
-    private static final Color DEFAULT_ACCENT = Color.web("#88ff39");
+    private static final Color DEFAULT_ACCENT = Color.web("#ba65ff");
     private static Color accent = loadAccent();
     private UiColors() {}
     public static Color getAccent() {return accent;}

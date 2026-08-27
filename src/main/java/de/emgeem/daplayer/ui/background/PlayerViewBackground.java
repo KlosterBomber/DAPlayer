@@ -44,17 +44,17 @@ public class PlayerViewBackground extends Canvas {
             new Stop(1.0, Color.rgb(10, 10, 10))
         });
         gc.setFill(gradient);
-        gc.fillRoundRect(x, y, pw, ph, 12, 12);
+        gc.fillRoundRect(x, y, pw, ph, 24, 24);
 
         // äußerer Rahmen
         gc.setStroke(Color.rgb(120, 120, 120, 0.35));
         gc.setLineWidth(2);
-        gc.strokeRoundRect(x + 2, y + 2, pw - 4, ph - 4, 10, 10);
+        gc.strokeRoundRect(x + 2, y + 2, pw - 4, ph - 4, 24, 24);
 
         // innerer Schattenrahmen
         gc.setStroke(Color.rgb(0, 0, 0, 0.55));
         gc.setLineWidth(2);
-        gc.strokeRoundRect(x + 6, y + 6, pw - 12, ph - 12, 8, 8);
+        gc.strokeRoundRect(x + 6, y + 6, pw - 12, ph - 12, 24, 24);
 
         // oberer Lichtreflex
         LinearGradient highlight = new LinearGradient(0, y, 0, y + 70, false, CycleMethod.NO_CYCLE, new Stop[]{
@@ -63,7 +63,7 @@ public class PlayerViewBackground extends Canvas {
         });
 
         gc.setFill(highlight);
-        gc.fillRoundRect(x + 4, y + 4, pw - 8, 60, 10, 10);
+        gc.fillRoundRect(x + 4, y + 4, pw - 8, 60, 24, 24);
 
         // gebürstetes Metall
         drawBrushedMetal(gc, x, y, pw, ph);
@@ -71,10 +71,10 @@ public class PlayerViewBackground extends Canvas {
         // abschließende Rahmen
         gc.setStroke(Color.rgb(90, 90, 90));
         gc.setLineWidth(1);
-        gc.strokeRoundRect(x + 1, y + 1, pw - 2, ph - 2, 12, 12);
+        gc.strokeRoundRect(x + 1, y + 1, pw - 2, ph - 2, 24, 24);
         gc.setStroke(Color.rgb(12, 12, 12));
         gc.setLineWidth(2);
-        gc.strokeRoundRect(x + 4, y + 4, pw - 8, ph - 8, 10, 10);
+        gc.strokeRoundRect(x + 4, y + 4, pw - 8, ph - 8, 24, 24);
     }
 
     private void drawBrushedMetal(GraphicsContext gc, double x, double y, double w, double h) {

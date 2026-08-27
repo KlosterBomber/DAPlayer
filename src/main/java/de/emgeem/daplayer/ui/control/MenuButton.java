@@ -30,6 +30,7 @@ public class MenuButton extends Canvas {
         super(width, HEIGHT);
         this.text = text;
         this.shape = shape;
+        hoverProperty().addListener((obs, oldValue, newValue) -> draw());
         draw();
     }
 
@@ -92,7 +93,17 @@ public class MenuButton extends Canvas {
         gc.setFont(BUTTON_FONT);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        gc.setFill(UiColors.accentLight());
+        if (isHover()) {
+            gc.setEffect(UiColors.displayGlow());
+            gc.setFill(UiColors.accentLight());
+        } else {
+            gc.setEffect(null);
+            gc.setFill(UiColors.getAccent());
+        }
         gc.fillText(text, w / 2, h / 2);
+        gc.setEffect(null);
     }
+
+
+
 }

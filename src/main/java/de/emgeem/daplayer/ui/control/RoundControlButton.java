@@ -32,6 +32,7 @@ public class RoundControlButton extends Canvas {
         this.text = text;
         super.setWidth(OUTER + 12);
         super.setHeight(OUTER + 12);
+        hoverProperty().addListener((obs, oldValue, newValue) -> draw());
         draw();
     }
 
@@ -118,7 +119,13 @@ public class RoundControlButton extends Canvas {
         // BESCHRIFTUNG
         gc.setFont(BUTTON_FONT);
         gc.setTextAlign(TextAlignment.CENTER);
-        gc.setFill(UiColors.accentLight());
+        if (isHover()) {
+            gc.setEffect(UiColors.displayGlow());
+            gc.setFill(UiColors.accentLight());
+        } else {
+            gc.setEffect(null);
+            gc.setFill(UiColors.getAccent());
+        }
         if (text.contains("\n")) {
             String[] lines = text.split("\n");
             double lineHeight = BUTTON_FONT.getSize() * 1.05;
@@ -126,5 +133,6 @@ public class RoundControlButton extends Canvas {
             gc.fillText(lines[0], cx, cy - lineHeight / 2 + baselineOffset);
             gc.fillText(lines[1], cx, cy + lineHeight / 2 + baselineOffset);
         } else {gc.fillText(text, cx, cy + BUTTON_FONT.getSize() * 0.35);}
+        gc.setEffect(null);
     }
 }
