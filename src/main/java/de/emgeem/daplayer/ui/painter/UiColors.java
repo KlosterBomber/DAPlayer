@@ -10,7 +10,7 @@ public final class UiColors {
 
     private static final Preferences PREFS = Preferences.userNodeForPackage(UiColors.class);
     private static final String ACCENT_KEY = "accentColor";
-    private static final Color DEFAULT_ACCENT = Color.web("#658eff");
+    private static final Color DEFAULT_ACCENT = Color.web("#4ac954");
     private static Color accent = loadAccent();
     private UiColors() {}
     public static Color getAccent() {return accent;}
@@ -31,6 +31,14 @@ public final class UiColors {
         glow.setRadius(8);
         glow.setSpread(0.25);
         glow.setColor(accent);
+        return glow;
+    }
+    public static DropShadow offGlow() {
+        DropShadow glow = new DropShadow();
+        glow.setBlurType(BlurType.GAUSSIAN);
+        glow.setRadius(8);
+        glow.setSpread(0.25);
+        glow.setColor(Color.web("#ff0000"));
         return glow;
     }
 }

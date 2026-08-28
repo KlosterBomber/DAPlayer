@@ -1,23 +1,23 @@
 package de.emgeem.daplayer.ui;
 
+import java.io.File;
+import java.util.List;
+
+import de.emgeem.daplayer.decoder.DecoderManager;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.ui.background.PlayerPanel;
 import de.emgeem.daplayer.ui.background.PlayerViewBackground;
 import de.emgeem.daplayer.ui.control.MenuButton;
-import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.OffButton;
+import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.VolumeKnob;
 import de.emgeem.daplayer.ui.display.PlayerDisplay;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
-
-import java.io.File;
-import java.util.List;
 
 public class DAPlayerView extends StackPane {
 
@@ -30,6 +30,7 @@ public class DAPlayerView extends StackPane {
     private static final double CONTROL_SPACING = 50;
 
     private final Playlist playlist = new Playlist("Current");
+    private final DecoderManager decoderManager = new DecoderManager();
 
     private double dragX;
     private double dragY;
@@ -92,9 +93,16 @@ public class DAPlayerView extends StackPane {
             );
             List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
             if (files != null) {
-                for (File file : files) {playlist.addTrack(new Track(file));}
-                display.setPlaylist(playlist); 
-                System.out.println("Playlist: " + playlist.getName() + " (" + playlist.getTracks().size() + " tracks)");
+                for (File file : files) {Track track = decoderManager.readTrack(file);
+playlist.addTrack(track);
+
+System.out.println(
+    track.getFileName()
+    + " | Titel: " + track.getTitle()
+    + " | Artist: " + track.getArtist()
+    + " | Album: " + track.getAlbum()
+);}
+                display.setPlaylist(playlist);
             }
         });
         StackPane.setAlignment(openButton, Pos.TOP_LEFT);

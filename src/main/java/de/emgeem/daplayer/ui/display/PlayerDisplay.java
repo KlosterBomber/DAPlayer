@@ -3,7 +3,6 @@ package de.emgeem.daplayer.ui.display;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.ui.painter.UiColors;
-
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -18,7 +17,7 @@ public class PlayerDisplay extends Canvas {
 
         super(width, height);
 
-        displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/BitcountPropSingle-Regular.ttf"),40);
+        displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/BitcountPropSingle-Regular.ttf"),18);
 
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
         heightProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -88,8 +87,16 @@ public class PlayerDisplay extends Canvas {
         gc.setEffect(UiColors.displayGlow());
         double y = 50;
         for (Track track : playlist.getTracks()) {
-            gc.fillText(track.getFileName(), 30, y);
-            y += 45;
+            String info = String.format(
+                "%s | %.1f kHz | %d bit | %s | %s",
+                track.getTitle(),
+                track.getSampleRate() / 1000.0,
+                track.getBitDepth(),
+                track.getChannels() == 1 ? "Mono" : "Stereo",
+                formatDuration(track.getDuration())
+            );
+            gc.fillText(info, 30, y);
+            y += 20;
         }
         gc.setEffect(null);
     }
@@ -99,4 +106,10 @@ public class PlayerDisplay extends Canvas {
         draw();
     }
 
+    private String formatDuration(long millis) {
+        long totalSeconds = millis / 1000;
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
+    }
 }

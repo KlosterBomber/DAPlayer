@@ -45,7 +45,7 @@ public class OffButton extends Canvas {
 
         gc.clearRect(0, 0, getWidth(), getHeight());
 
-        Color ledColor = Color.web("#ff0000");
+        Color ledColor = UiColors.getAccent();
 
         // ========================================================
         // 1. ÄUSSERE LICHTKANTE
@@ -73,9 +73,14 @@ public class OffButton extends Canvas {
             new Stop(0.88, ledColor),
             new Stop(1.00, ledColor.deriveColor(0, 1.0, 0.82, 1.0))
         });
-        gc.setFill(ledSurface);
-        gc.fillOval(cx - LED_OUTER / 2, cy - LED_OUTER / 2, LED_OUTER, LED_OUTER);
-
+        if (isHover()) {
+            gc.setEffect(UiColors.offGlow());
+            gc.setFill(Color.web("#ffb5b5"));
+        } else {
+            gc.setEffect(null);
+            gc.setFill(ledSurface);
+            gc.fillOval(cx - LED_OUTER / 2, cy - LED_OUTER / 2, LED_OUTER, LED_OUTER);
+        }
         // ========================================================
         // 4. INNERE AUSSPARUNG DES LED-RINGS
         // ========================================================
@@ -120,8 +125,8 @@ public class OffButton extends Canvas {
         gc.setFont(BUTTON_FONT);
         gc.setTextAlign(TextAlignment.CENTER);
         if (isHover()) {
-            gc.setEffect(UiColors.displayGlow());
-            gc.setFill(UiColors.accentLight());
+            gc.setEffect(UiColors.offGlow());
+            gc.setFill(Color.web("#ffb5b5"));
         } else {
             gc.setEffect(null);
             gc.setFill(UiColors.getAccent());
