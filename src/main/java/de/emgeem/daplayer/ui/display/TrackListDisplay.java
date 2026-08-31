@@ -19,7 +19,6 @@ public class TrackListDisplay extends DisplayMode {
     private double scrollPosition = 0;
     private Playlist playlist;
     private int pressedButton = -1;
-    private int selectedTrackIndex = -1;
     private boolean draggingScrollBar = false;
     private double dragStartY;
     private double DragStartPosition;
@@ -55,7 +54,6 @@ public class TrackListDisplay extends DisplayMode {
                 double trackY = y + scrollOffset - 60;
                 int index = (int) (trackY / 20);
                 if (index >= 0 && index < playlist.getTracks().size()) {
-                    selectedTrackIndex = index;
                     playlist.setCurrentIndex(index);
                     draw();
                 }
@@ -84,7 +82,6 @@ public class TrackListDisplay extends DisplayMode {
                 playlist.clear();
                 scrollOffset = 0;
                 scrollPosition = 0;
-                selectedTrackIndex = -1;
                 draw();
             }
         });
@@ -135,7 +132,7 @@ public class TrackListDisplay extends DisplayMode {
             String artist = limitText(track.getArtist(), 34);
             String duration = formatDuration(track.getDuration());
             int trackIndex = playlist.getTracks().indexOf(track);
-            if (i == selectedTrackIndex) {
+            if (i == playlist.getCurrentIndex()) {
                 gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.15));
                 gc.fillRoundRect(25, y-17, 1099, 20, 4, 4);
                 gc.setFill(UiColors.accentLight());
@@ -155,7 +152,6 @@ public class TrackListDisplay extends DisplayMode {
         this.playlist = playlist;
         scrollOffset = 0;
         scrollPosition = 0;
-        selectedTrackIndex = playlist != null && !playlist.getTracks().isEmpty() ? 0 : -1;
         draw();
     }
 

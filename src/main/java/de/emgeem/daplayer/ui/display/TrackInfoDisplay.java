@@ -5,12 +5,14 @@ import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.ui.painter.UiColors;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 
 public class TrackInfoDisplay extends DisplayMode {
 
     private final Canvas canvas;
     private final Font displayFont;
+    private final ArtworkManager artworkManager;
 
     private Playlist playlist;
 
@@ -19,6 +21,13 @@ public class TrackInfoDisplay extends DisplayMode {
         this.displayFont = displayFont;
         canvas = new Canvas();
         getChildren().add(canvas);
+        canvas.setOnScroll(e -> {
+            if (playlist == null || playlist.getTracks().isEmpty()) {return;}
+            if (e.getDeltaY() < 0) {playlist.nextTrack();}
+            else if (e.getDeltaY() > 0) {playlist.previousTrack();}
+            draw();
+        });
+        artworkManager = new ArtworkManager();
     }
    
     @Override
@@ -32,6 +41,7 @@ public class TrackInfoDisplay extends DisplayMode {
         if (playlist == null || playlist.getTracks().isEmpty()) {return;}
         Track track = playlist.getCurrentTrack();
         if (track == null) {return;}
+        Image artwork = artworkManager.getArtwork(track);
         gc.setFont(displayFont);
         gc.setFill(UiColors.accentLight());
         gc.setEffect(UiColors.displayGlow());
@@ -68,6 +78,19 @@ public class TrackInfoDisplay extends DisplayMode {
         y += lineHeight;
         gc.fillText("DURATION", xLabel, y);
         gc.fillText(formatDuration(track.getDuration()), xValue, y);
+        if (artwork != null) {
+            double boxX = 850;
+            double boxY = 50;
+            double boxSize = 250;
+            double imageWidth = artwork.getWidth();
+            double imageHeight = artwork.getHeight();
+            double scale = Math.min(boxSize / imageWidth, boxSize / imageHeight);
+            double drawWidth = imageWidth * scale;
+            double drawHeight = imageHeight * scale;
+            double drawX = boxX + (boxSize - drawWidth) / 2;
+            double drawY = boxY + (boxSize - drawHeight) / 2;
+            gc.drawImage(artwork, drawX, drawY, drawWidth, drawHeight);
+        }
         gc.setEffect(null);
     }
 

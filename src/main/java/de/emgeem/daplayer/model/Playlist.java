@@ -19,7 +19,11 @@ public class Playlist {
         if (currentIndex < 0 || currentIndex >= tracks.size()) {return null;}
         return tracks.get(currentIndex);
     }
+    public int getCurrentIndex() {return currentIndex;}
     public void setCurrentIndex(int index) {if (index >= 0 && index < tracks.size()) {currentIndex = index;}}
+
+    public void nextTrack() {if (currentIndex < tracks.size()) {currentIndex++;}}
+    public void previousTrack() {if (currentIndex > 0) {currentIndex--;}}
 
     public void addTrack(Track track) {
         tracks.add(track);
