@@ -1,115 +1,111 @@
 package de.emgeem.daplayer.ui.display;
 
 import de.emgeem.daplayer.model.Playlist;
-import de.emgeem.daplayer.model.Track;
-import de.emgeem.daplayer.ui.painter.UiColors;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class PlayerDisplay extends Canvas {
+public class PlayerDisplay extends StackPane {
 
     private final Font displayFont;
-    private Playlist playlist;
+    private final Canvas backgroundCanvas;
+    private final StartDisplay startDisplay;
+    private final TrackListDisplay trackListDisplay;
+    private final TrackInfoDisplay trackInfoDisplay;
 
-    public PlayerDisplay(double width, double height) {
+    private DisplayMode currentDisplay;
 
-        super(width, height);
+    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction) {
+        setPrefSize(width, height);
+        setMaxSize(width, height);
+        backgroundCanvas = new Canvas();
+        getChildren().add(backgroundCanvas);
+        displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),18);
+        
+        startDisplay = new StartDisplay();
+        startDisplay.prefWidthProperty().bind(widthProperty());
+        startDisplay.prefHeightProperty().bind(heightProperty());
 
-        displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/BitcountPropSingle-Regular.ttf"),18);
+        trackListDisplay = new TrackListDisplay(displayFont, addFileAction, addFolderAction);
+        trackListDisplay.prefWidthProperty().bind(widthProperty());
+        trackListDisplay.prefHeightProperty().bind(heightProperty());
+
+        trackInfoDisplay = new TrackInfoDisplay(displayFont);
+        trackInfoDisplay.prefWidthProperty().bind(widthProperty());
+        trackInfoDisplay.prefHeightProperty().bind(heightProperty());
+
+        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay);
+        trackListDisplay.setVisible(false);
+        trackInfoDisplay.setVisible(false);
+
+        StackPane.setAlignment(startDisplay, Pos.TOP_LEFT);
+        StackPane.setAlignment(trackListDisplay, Pos.TOP_LEFT);
+        StackPane.setAlignment(trackInfoDisplay, Pos.TOP_LEFT);
+        currentDisplay = startDisplay;
 
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
         heightProperty().addListener((obs, oldValue, newValue) -> draw());
-
-        draw();
+        Platform.runLater(this::draw);
     }
-
 
     private void draw() {
-
-        GraphicsContext gc = getGraphicsContext2D();
-
         double w = getWidth();
         double h = getHeight();
-
+        backgroundCanvas.setWidth(w);
+        backgroundCanvas.setHeight(h);
+        GraphicsContext gc = backgroundCanvas.getGraphicsContext2D();
+        
         gc.clearRect(0, 0, w, h);
-
         drawDisplay(gc, 0, 0, w, h);
-        drawTrackList(gc, w, h);
+        currentDisplay.draw();
     }
 
-
     private void drawDisplay(GraphicsContext gc, double x, double y, double w, double h) {
-
-        // Außenschacht
+// Außenschacht
         gc.setFill(Color.rgb(22, 22, 22));
         gc.fillRoundRect(x, y, w, h, 16, 16);
-
-        // oberes Highlight
+// oberes Highlight
         gc.setStroke(Color.rgb(90, 90, 90, 0.25));
         gc.setLineWidth(1);
         gc.strokeRoundRect(x + 1, y + 1, w - 2, h - 2, 16, 16);
-
-        // unterer Schatten
+// unterer Schatten
         gc.setStroke(Color.rgb(0, 0, 0, 0.70));
         gc.strokeRoundRect(x + 3, y + 3, w - 6, h - 6, 12, 12);
-
-        // eigentliche Displayfläche
+// eigentliche Displayfläche
         gc.setFill(Color.rgb(10, 10, 10));
         gc.fillRoundRect(x + 10, y + 10, w - 20, h - 20, 8, 8);
-
-        // Lichtkante links
+// Lichtkante links
         gc.setStroke(Color.rgb(90, 90, 90, 0.12));
         gc.strokeLine(x + 11, y + 14, x + 11, y + h - 14);
-
-        // Schatten rechts
+// Schatten rechts
         gc.setStroke(Color.rgb(0, 0, 0, 0.60));
         gc.strokeLine(x + w - 11, y + 14, x + w - 11, y + h - 14);
     }
 
-    private void drawTestText(GraphicsContext gc, double w, double h) {
-        String text = "DAPlayer";
-        gc.setFont(displayFont);
-        gc.setFill(UiColors.accentLight());
-        gc.setEffect(UiColors.displayGlow());
-        double textWidth = displayFont.getSize() * text.length() * 0.6;
-        double x = (w - textWidth) / 2.0;
-        double y = h / 2.0;
-        gc.fillText(text, x, y);
-        gc.setEffect(null);
-    }
 
-    private void drawTrackList(GraphicsContext gc, double w, double h) {
-        if (playlist == null) {return;}
-        gc.setFont(displayFont);
-        gc.setFill(UiColors.accentLight());
-        gc.setEffect(UiColors.displayGlow());
-        double y = 50;
-        for (Track track : playlist.getTracks()) {
-            String info = String.format(
-                "%s | %.1f kHz | %d bit | %s | %s",
-                track.getTitle(),
-                track.getSampleRate() / 1000.0,
-                track.getBitDepth(),
-                track.getChannels() == 1 ? "Mono" : "Stereo",
-                formatDuration(track.getDuration())
-            );
-            gc.fillText(info, 30, y);
-            y += 20;
-        }
-        gc.setEffect(null);
-    }
-
-    public void setPlaylist(Playlist playlist) {
-        this.playlist = playlist;
+    public void showTrackList() {
+        startDisplay.setVisible(false);
+        trackInfoDisplay.setVisible(false);
+        trackListDisplay.setVisible(true);
+        currentDisplay = trackListDisplay;
         draw();
     }
+    public void showTrackInfo() {
+        startDisplay.setVisible(false);
+        trackListDisplay.setVisible(false);
+        trackInfoDisplay.setVisible(true);
+        currentDisplay = trackInfoDisplay;
+        draw();
+    }
+    
 
-    private String formatDuration(long millis) {
-        long totalSeconds = millis / 1000;
-        long minutes = totalSeconds / 60;
-        long seconds = totalSeconds % 60;
-        return String.format("%02d:%02d", minutes, seconds);
+    public void setPlaylist(Playlist playlist) {
+        trackListDisplay.setPlaylist(playlist);
+        trackInfoDisplay.setPlaylist(playlist);
+        draw();
     }
 }

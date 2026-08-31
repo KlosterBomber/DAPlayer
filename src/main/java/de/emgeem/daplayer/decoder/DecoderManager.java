@@ -10,7 +10,10 @@ public class DecoderManager {
 
     private final List<AudioDecoder> decoders = new ArrayList<>();
 
-    public DecoderManager() {decoders.add(new WavDecoder());}
+    public DecoderManager() {
+        decoders.add(new WavDecoder());
+        decoders.add(new Mp3Decoder());
+    }
 
     public Track readTrack(File file) {
         for (AudioDecoder decoder : decoders) {if (decoder.supports(file)) {return decoder.readTrack(file);}}

@@ -17,6 +17,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 public class DAPlayerView extends StackPane {
@@ -31,6 +32,7 @@ public class DAPlayerView extends StackPane {
 
     private final Playlist playlist = new Playlist("Current");
     private final DecoderManager decoderManager = new DecoderManager();
+    private final PlayerDisplay display;
 
     private double dragX;
     private double dragY;
@@ -51,9 +53,8 @@ public class DAPlayerView extends StackPane {
         displayArea.setAlignment(Pos.TOP_CENTER);
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
-        PlayerDisplay display = new PlayerDisplay(1158, DISPLAY_HEIGHT);
+        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder);
         display.setPlaylist(playlist);
-        display.widthProperty().bind(widthProperty().subtract(DISPLAY_SIDE_MARGIN * 2));
         displayArea.getChildren().add(display);
 
     // CONTROL AREA
@@ -84,54 +85,36 @@ public class DAPlayerView extends StackPane {
 
 // MENU BUTTONS
     
-        MenuButton openButton = new MenuButton("OPEN", 150, 40, MenuButton.Shape.LEFT);
-        openButton.setOnMouseClicked(e -> {
-            FileChooser chooser = new FileChooser();
-            chooser.setTitle("Open audio file");
-            chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Audio files", "*.wav", "*.mp3", "*.wma", "*.flac", "*.ogg", "*.aiff")
-            );
-            List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
-            if (files != null) {
-                for (File file : files) {Track track = decoderManager.readTrack(file);
-playlist.addTrack(track);
-
-System.out.println(
-    track.getFileName()
-    + " | Titel: " + track.getTitle()
-    + " | Artist: " + track.getArtist()
-    + " | Album: " + track.getAlbum()
-);}
-                display.setPlaylist(playlist);
-            }
-        });
-        StackPane.setAlignment(openButton, Pos.TOP_LEFT);
-        openButton.setTranslateX(55);
-        openButton.setTranslateY(425);
-
         MenuButton playlistButton = new MenuButton("PLAYLIST", 150, 40, MenuButton.Shape.CENTER);
+        playlistButton.setOnMouseClicked(e -> display.showTrackList());
         StackPane.setAlignment(playlistButton, Pos.TOP_LEFT);
-        playlistButton.setTranslateX(205);
+        playlistButton.setTranslateX(25);
         playlistButton.setTranslateY(425);
+
+        MenuButton trackinfoButton = new MenuButton("TRACKINFO", 150, 40, MenuButton.Shape.CENTER);
+        trackinfoButton.setOnMouseClicked(e -> display.showTrackInfo());
+        StackPane.setAlignment(trackinfoButton, Pos.TOP_LEFT);
+        trackinfoButton.setTranslateX(175);
+        trackinfoButton.setTranslateY(425);
 
         MenuButton settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.RIGHT);
         StackPane.setAlignment(settingsButton, Pos.TOP_LEFT);
-        settingsButton.setTranslateX(355);
+        settingsButton.setTranslateX(325);
         settingsButton.setTranslateY(425);
 
-        MenuButton displayButton = new MenuButton("DISPLAY", 150, 40, MenuButton.Shape.LEFT);
-        StackPane.setAlignment(displayButton, Pos.TOP_RIGHT);
-        displayButton.setTranslateX(-355);
-        displayButton.setTranslateY(425);
+        MenuButton reserveButton = new MenuButton("RESERVE", 150, 40, MenuButton.Shape.LEFT);
+        StackPane.setAlignment(reserveButton, Pos.TOP_RIGHT);
+        reserveButton.setTranslateX(-325);
+        reserveButton.setTranslateY(425);
 
         MenuButton visualsButton = new MenuButton("VISUALS", 150, 40, MenuButton.Shape.CENTER);
         StackPane.setAlignment(visualsButton, Pos.TOP_RIGHT);
-        visualsButton.setTranslateX(-205);
+        visualsButton.setTranslateX(-175);
         visualsButton.setTranslateY(425);
 
-        MenuButton eqButton = new MenuButton("EQUALIZER", 150, 40, MenuButton.Shape.RIGHT);
+        MenuButton eqButton = new MenuButton("EQUALIZER", 150, 40, MenuButton.Shape.CENTER);
         StackPane.setAlignment(eqButton, Pos.TOP_RIGHT);
-        eqButton.setTranslateX(-55);
+        eqButton.setTranslateX(-25);
         eqButton.setTranslateY(425);
 
         OffButton offButton = new OffButton("OFF"); 
@@ -161,11 +144,11 @@ System.out.println(
                 displayArea,
                 controlArea,
 
-                openButton,
                 playlistButton,
+                trackinfoButton,
                 settingsButton,
 
-                displayButton,
+                reserveButton,
                 visualsButton,
                 eqButton,
 
@@ -173,4 +156,55 @@ System.out.println(
                 moveButton
         );                
     }
+
+    private void openFiles() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open audio file");
+        chooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Audio files", "*.wav", "*.mp3", "*.wma", "*.flac", "*.ogg", "*.aiff")
+        );
+        List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
+        if (files != null) {
+            for (File file : files) {Track track = decoderManager.readTrack(file);
+            playlist.addTrack(track);
+                            
+            System.out.println(
+                track.getFileName()
+                + " | Titel: " + track.getTitle()
+                + " | Artist: " + track.getArtist()
+                + " | Album: " + track.getAlbum()
+            );}
+            display.setPlaylist(playlist);
+        }
+    }
+
+    private void openFolder() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Open audio folder");
+        File folder = chooser.showDialog(getScene().getWindow());
+        if (folder == null) {return;}
+        File[] files = folder.listFiles();
+        if (files == null) {return;}
+        for (File file : files) {
+            if (!file.isFile()) {continue;}
+            String name = file.getName().toLowerCase();
+            if (!name.endsWith(".wav")
+                    && !name.endsWith(".mp3")
+                    && !name.endsWith(".wma")
+                    && !name.endsWith(".flac")
+                    && !name.endsWith(".ogg")
+                    && !name.endsWith(".aiff")) {
+                continue;
+            }
+            Track track = decoderManager.readTrack(file);
+            playlist.addTrack(track);
+            System.out.println(
+                track.getFileName()
+                + " | Titel: " + track.getTitle()
+                + " | Artist: " + track.getArtist()
+                + " | Album: " + track.getAlbum()
+            );
+        }
+        display.setPlaylist(playlist);
+    }   
 }

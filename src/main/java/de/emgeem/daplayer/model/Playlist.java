@@ -7,6 +7,7 @@ public class Playlist {
 
     private final String name;
     private final List<Track> tracks = new ArrayList<>();
+    private int currentIndex = -1;
 
     public Playlist(String name) {this.name = name;}
 
@@ -14,10 +15,19 @@ public class Playlist {
 
     public List<Track> getTracks() {return tracks;}
 
-    public void addTrack(Track track) {tracks.add(track);}
+    public Track getCurrentTrack() {
+        if (currentIndex < 0 || currentIndex >= tracks.size()) {return null;}
+        return tracks.get(currentIndex);
+    }
+    public void setCurrentIndex(int index) {if (index >= 0 && index < tracks.size()) {currentIndex = index;}}
+
+    public void addTrack(Track track) {
+        tracks.add(track);
+        if (currentIndex == -1) {currentIndex = 0;}
+    }
     
     public void removeTrack(Track track) {tracks.remove(track);}
 
-    public void clear() {tracks.clear();}
+    public void clear() {tracks.clear(); currentIndex = -1;}
 
 }
