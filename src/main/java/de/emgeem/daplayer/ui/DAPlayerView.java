@@ -3,6 +3,7 @@ package de.emgeem.daplayer.ui;
 import java.io.File;
 import java.util.List;
 
+import de.emgeem.daplayer.audio.AudioDeviceManager;
 import de.emgeem.daplayer.decoder.DecoderManager;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
@@ -33,6 +34,7 @@ public class DAPlayerView extends StackPane {
     private final Playlist playlist = new Playlist("Current");
     private final DecoderManager decoderManager = new DecoderManager();
     private final PlayerDisplay display;
+    private final AudioDeviceManager audioDeviceManager = new AudioDeviceManager();
 
     private double dragX;
     private double dragY;
@@ -53,7 +55,7 @@ public class DAPlayerView extends StackPane {
         displayArea.setAlignment(Pos.TOP_CENTER);
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
-        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder);
+        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager);
         display.setPlaylist(playlist);
         displayArea.getChildren().add(display);
 
@@ -98,6 +100,7 @@ public class DAPlayerView extends StackPane {
         trackinfoButton.setTranslateY(425);
 
         MenuButton settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.RIGHT);
+        settingsButton.setOnMouseClicked(e -> display.showSettings());
         StackPane.setAlignment(settingsButton, Pos.TOP_LEFT);
         settingsButton.setTranslateX(325);
         settingsButton.setTranslateY(425);

@@ -1,5 +1,6 @@
 package de.emgeem.daplayer.ui.display;
 
+import de.emgeem.daplayer.audio.AudioDeviceManager;
 import de.emgeem.daplayer.model.Playlist;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -16,10 +17,11 @@ public class PlayerDisplay extends StackPane {
     private final StartDisplay startDisplay;
     private final TrackListDisplay trackListDisplay;
     private final TrackInfoDisplay trackInfoDisplay;
+    private final SettingsDisplay settingsDisplay;
 
     private DisplayMode currentDisplay;
 
-    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction) {
+    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager) {
         setPrefSize(width, height);
         setMaxSize(width, height);
         backgroundCanvas = new Canvas();
@@ -38,13 +40,19 @@ public class PlayerDisplay extends StackPane {
         trackInfoDisplay.prefWidthProperty().bind(widthProperty());
         trackInfoDisplay.prefHeightProperty().bind(heightProperty());
 
-        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay);
+        settingsDisplay = new SettingsDisplay(displayFont, audioDeviceManager);
+        settingsDisplay.prefWidthProperty().bind(widthProperty());
+        settingsDisplay.prefHeightProperty().bind(heightProperty());
+
+        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay);
         trackListDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
+        settingsDisplay.setVisible(false);
 
         StackPane.setAlignment(startDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(trackListDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(trackInfoDisplay, Pos.TOP_LEFT);
+        StackPane.setAlignment(settingsDisplay, Pos.TOP_LEFT);
         currentDisplay = startDisplay;
 
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -90,6 +98,7 @@ public class PlayerDisplay extends StackPane {
     public void showTrackList() {
         startDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
+        settingsDisplay.setVisible(false);
         trackListDisplay.setVisible(true);
         currentDisplay = trackListDisplay;
         draw();
@@ -97,8 +106,17 @@ public class PlayerDisplay extends StackPane {
     public void showTrackInfo() {
         startDisplay.setVisible(false);
         trackListDisplay.setVisible(false);
+        settingsDisplay.setVisible(false);
         trackInfoDisplay.setVisible(true);
         currentDisplay = trackInfoDisplay;
+        draw();
+    }
+    public void showSettings() {
+        startDisplay.setVisible(false);
+        trackListDisplay.setVisible(false);
+        trackInfoDisplay.setVisible(false);
+        settingsDisplay.setVisible(true);
+        currentDisplay = settingsDisplay;
         draw();
     }
     
