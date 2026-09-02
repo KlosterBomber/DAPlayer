@@ -125,6 +125,7 @@ public class TrackListDisplay extends DisplayMode {
         gc.rect(20, 60, w - 40, 280);
         gc.closePath();
         gc.clip();
+        gc.setEffect(null);
         double y = 80 - scrollOffset;
         for (int i = 0; i < playlist.getTracks().size(); i++) {
             Track track = playlist.getTracks().get(i);
@@ -134,7 +135,7 @@ public class TrackListDisplay extends DisplayMode {
             int trackIndex = playlist.getTracks().indexOf(track);
             if (i == playlist.getCurrentIndex()) {
                 gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.15));
-                gc.fillRoundRect(25, y-17, 1099, 20, 4, 4);
+                gc.fillRect(25, y-17, 1099, 20);
                 gc.setFill(UiColors.accentLight());
             }
             gc.fillText(title, 30, y);

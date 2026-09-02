@@ -5,6 +5,7 @@ import java.util.List;
 import javax.sound.sampled.Mixer;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
+import de.emgeem.daplayer.ui.painter.UiColors;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
@@ -35,9 +36,11 @@ public class AudioDeviceSettings extends StackPane {
         canvas.setHeight(h);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, w, h);
-        gc.setFill(Color.rgb(180, 180, 180));
+        gc.setFill(UiColors.accentLight());
+        gc.setEffect(UiColors.displayGlow());
         gc.setFont(displayFont);
         gc.fillText("AUDIO DEVICE", 30, 45);
+        gc.setEffect(null);
         drawDeviceField(gc);
         if (deviceListOpen) {drawDeviceList(gc);}
     }
@@ -49,16 +52,18 @@ public class AudioDeviceSettings extends StackPane {
         double height = 30;
         gc.setFill(Color.rgb(25, 25, 25));
         gc.fillRoundRect(x, y, width, height, 6, 6);
-        gc.setStroke(Color.rgb(90, 90, 90, 0.5));
+        gc.setStroke(UiColors.accentLight());
+        gc.setEffect(UiColors.displayGlow());
         gc.setLineWidth(1);
         gc.strokeRoundRect(x, y, width, height, 6, 6);
+        gc.setEffect(null);
         if (audioDeviceManager.getSelectedDevice() != null) {
-            gc.setFill(Color.rgb(180, 180, 180));
+            gc.setFill(UiColors.accentLight());
             gc.setFont(displayFont);
             gc.fillText(audioDeviceManager.getSelectedDevice().getName(), x + 10, y + 21);
         }
         // Pfeil
-        gc.setFill(Color.rgb(180, 180, 180));
+        gc.setFill(UiColors.accentLight());
         double arrowX = x + width - 20;
         double arrowY = y + 11;
         gc.fillPolygon(new double[] {arrowX - 5, arrowX + 5, arrowX}, new double[] {arrowY - 3, arrowY - 3, arrowY + 4}, 3);
@@ -101,12 +106,12 @@ public class AudioDeviceSettings extends StackPane {
         for (int i = 0; i < devices.size(); i++) {
             Mixer.Info device = devices.get(i);
             double itemY = y + i * itemHeight;
-            if (device.equals(audioDeviceManager.getSelectedDevice())) {gc.setFill(Color.rgb(35, 35, 35));} 
+            if (device.equals(audioDeviceManager.getSelectedDevice())) {gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.15));} 
             else {gc.setFill(Color.rgb(20, 20, 20));}
             gc.fillRect(x, itemY, width, itemHeight);
             gc.setStroke(Color.rgb(70, 70, 70, 0.5));
             gc.strokeRect(x, itemY, width, itemHeight);
-            gc.setFill(Color.rgb(180, 180, 180));
+            gc.setFill(UiColors.accentLight());
             gc.setFont(displayFont);
             gc.fillText(device.getName(), x + 10, itemY + 21);
         }

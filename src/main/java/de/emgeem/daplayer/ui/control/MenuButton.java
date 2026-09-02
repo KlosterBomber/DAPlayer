@@ -31,7 +31,7 @@ public class MenuButton extends Canvas {
         draw();
     }
 
-    private void draw() {
+    public void draw() {
 
         GraphicsContext gc = getGraphicsContext2D();
         double w = getWidth();

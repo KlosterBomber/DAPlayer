@@ -18,10 +18,12 @@ public class PlayerDisplay extends StackPane {
     private final TrackListDisplay trackListDisplay;
     private final TrackInfoDisplay trackInfoDisplay;
     private final SettingsDisplay settingsDisplay;
+    private final Runnable redrawUiAction;
 
     private DisplayMode currentDisplay;
 
-    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager) {
+    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Runnable redrawUiAction) {
+        this.redrawUiAction = redrawUiAction;
         setPrefSize(width, height);
         setMaxSize(width, height);
         backgroundCanvas = new Canvas();
@@ -40,7 +42,7 @@ public class PlayerDisplay extends StackPane {
         trackInfoDisplay.prefWidthProperty().bind(widthProperty());
         trackInfoDisplay.prefHeightProperty().bind(heightProperty());
 
-        settingsDisplay = new SettingsDisplay(displayFont, audioDeviceManager);
+        settingsDisplay = new SettingsDisplay(displayFont, audioDeviceManager, this::redraw);
         settingsDisplay.prefWidthProperty().bind(widthProperty());
         settingsDisplay.prefHeightProperty().bind(heightProperty());
 
@@ -70,6 +72,10 @@ public class PlayerDisplay extends StackPane {
         gc.clearRect(0, 0, w, h);
         drawDisplay(gc, 0, 0, w, h);
         currentDisplay.draw();
+    }
+    public void redraw() {
+        draw();
+        redrawUiAction.run();
     }
 
     private void drawDisplay(GraphicsContext gc, double x, double y, double w, double h) {

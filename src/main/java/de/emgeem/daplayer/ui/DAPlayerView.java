@@ -36,6 +36,21 @@ public class DAPlayerView extends StackPane {
     private final PlayerDisplay display;
     private final AudioDeviceManager audioDeviceManager = new AudioDeviceManager();
 
+    private final PlayerPanel playerPanel;
+    private final RoundControlButton previousButton;
+    private final RoundControlButton stopButton;
+    private final RoundControlButton playPauseButton;
+    private final RoundControlButton nextButton;
+    private final VolumeKnob volumeKnob;
+    private final OffButton offButton;
+    private final MenuButton playlistButton;
+    private final MenuButton trackinfoButton;
+    private final MenuButton settingsButton;
+    private final MenuButton reserveButton;
+    private final MenuButton visualsButton;
+    private final MenuButton eqButton;
+    private final MenuButton moveButton;
+
     private double dragX;
     private double dragY;
 
@@ -47,7 +62,7 @@ public class DAPlayerView extends StackPane {
         background.heightProperty().bind(heightProperty());
 
     // PLAYER PANEL
-        PlayerPanel playerPanel = new PlayerPanel(1200, 675);
+        playerPanel = new PlayerPanel(1200, 675);
         StackPane.setAlignment(playerPanel, Pos.TOP_CENTER);
 
     // DISPLAY AREA
@@ -55,7 +70,7 @@ public class DAPlayerView extends StackPane {
         displayArea.setAlignment(Pos.TOP_CENTER);
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
-        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager);
+        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, this::redrawUi);
         display.setPlaylist(playlist);
         displayArea.getChildren().add(display);
 
@@ -66,12 +81,12 @@ public class DAPlayerView extends StackPane {
         controlArea.setAlignment(Pos.CENTER);
         controlArea.setPadding(new Insets(CONTROL_TOP_MARGIN, 0, CONTROL_BOTTOM_MARGIN, 0));
 
-        RoundControlButton previousButton = new RoundControlButton("PREV");
-        RoundControlButton stopButton = new RoundControlButton("STOP");
-        RoundControlButton playPauseButton = new RoundControlButton("PLAY/\nPAUSE");
-        RoundControlButton nextButton = new RoundControlButton("NEXT");    
+        previousButton = new RoundControlButton("PREV");
+        stopButton = new RoundControlButton("STOP");
+        playPauseButton = new RoundControlButton("PLAY/\nPAUSE");
+        nextButton = new RoundControlButton("NEXT");    
 
-        VolumeKnob volumeKnob = new VolumeKnob("VOLUME");
+        volumeKnob = new VolumeKnob("VOLUME");
 
         HBox controlRow = new HBox();
         controlRow.setAlignment(Pos.CENTER);
@@ -87,46 +102,46 @@ public class DAPlayerView extends StackPane {
 
 // MENU BUTTONS
     
-        MenuButton playlistButton = new MenuButton("PLAYLIST", 150, 40, MenuButton.Shape.CENTER);
+        playlistButton = new MenuButton("PLAYLIST", 150, 40, MenuButton.Shape.CENTER);
         playlistButton.setOnMouseClicked(e -> display.showTrackList());
         StackPane.setAlignment(playlistButton, Pos.TOP_LEFT);
         playlistButton.setTranslateX(25);
         playlistButton.setTranslateY(425);
 
-        MenuButton trackinfoButton = new MenuButton("TRACKINFO", 150, 40, MenuButton.Shape.CENTER);
+        trackinfoButton = new MenuButton("TRACKINFO", 150, 40, MenuButton.Shape.CENTER);
         trackinfoButton.setOnMouseClicked(e -> display.showTrackInfo());
         StackPane.setAlignment(trackinfoButton, Pos.TOP_LEFT);
         trackinfoButton.setTranslateX(175);
         trackinfoButton.setTranslateY(425);
 
-        MenuButton settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.RIGHT);
+        settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.RIGHT);
         settingsButton.setOnMouseClicked(e -> display.showSettings());
         StackPane.setAlignment(settingsButton, Pos.TOP_LEFT);
         settingsButton.setTranslateX(325);
         settingsButton.setTranslateY(425);
 
-        MenuButton reserveButton = new MenuButton("RESERVE", 150, 40, MenuButton.Shape.LEFT);
+        reserveButton = new MenuButton("RESERVE", 150, 40, MenuButton.Shape.LEFT);
         StackPane.setAlignment(reserveButton, Pos.TOP_RIGHT);
         reserveButton.setTranslateX(-325);
         reserveButton.setTranslateY(425);
 
-        MenuButton visualsButton = new MenuButton("VISUALS", 150, 40, MenuButton.Shape.CENTER);
+        visualsButton = new MenuButton("VISUALS", 150, 40, MenuButton.Shape.CENTER);
         StackPane.setAlignment(visualsButton, Pos.TOP_RIGHT);
         visualsButton.setTranslateX(-175);
         visualsButton.setTranslateY(425);
 
-        MenuButton eqButton = new MenuButton("EQUALIZER", 150, 40, MenuButton.Shape.CENTER);
+        eqButton = new MenuButton("EQUALIZER", 150, 40, MenuButton.Shape.CENTER);
         StackPane.setAlignment(eqButton, Pos.TOP_RIGHT);
         eqButton.setTranslateX(-25);
         eqButton.setTranslateY(425);
 
-        OffButton offButton = new OffButton("OFF"); 
+        offButton = new OffButton("OFF"); 
         offButton.setOnMouseClicked(e -> {getScene().getWindow().hide();});
         StackPane.setAlignment(offButton, Pos.TOP_LEFT);
         offButton.setTranslateX(20);
         offButton.setTranslateY(585);
 
-        MenuButton moveButton = new MenuButton("MOVE", 70, 30, MenuButton.Shape.BOTH);
+        moveButton = new MenuButton("MOVE", 70, 30, MenuButton.Shape.BOTH);
         moveButton.setOnMousePressed(e -> {
             dragX = e.getScreenX() - getScene().getWindow().getX();
             dragY = e.getScreenY() - getScene().getWindow().getY();
@@ -209,5 +224,22 @@ public class DAPlayerView extends StackPane {
             );
         }
         display.setPlaylist(playlist);
-    }   
+    }
+    
+    private void redrawUi() {
+        playerPanel.draw();
+        previousButton.draw();
+        stopButton.draw();
+        playPauseButton.draw();
+        nextButton.draw();
+        volumeKnob.draw();
+        offButton.draw();
+        playlistButton.draw();
+        trackinfoButton.draw();
+        settingsButton.draw();
+        reserveButton.draw();
+        visualsButton.draw();
+        eqButton.draw();
+        moveButton.draw();
+    }
 }
