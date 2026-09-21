@@ -1,5 +1,6 @@
 package de.emgeem.daplayer.ui.display;
 
+import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
@@ -21,11 +22,14 @@ public class PlayerDisplay extends StackPane {
     private final TrackInfoDisplay trackInfoDisplay;
     private final SettingsDisplay settingsDisplay;
     private final Runnable redrawUiAction;
+    private final Consumer<String> activeDisplayAction;
 
     private DisplayMode currentDisplay;
 
-    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Runnable redrawUiAction, LongConsumer seekAction) {
+    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Runnable redrawUiAction,
+                         LongConsumer seekAction, Consumer<String> activeDisplayAction) {
         this.redrawUiAction = redrawUiAction;
+        this.activeDisplayAction = activeDisplayAction;
         setPrefSize(width, height);
         setMaxSize(width, height);
         backgroundCanvas = new Canvas();
@@ -110,6 +114,7 @@ public class PlayerDisplay extends StackPane {
         settingsDisplay.setVisible(false);
         trackListDisplay.setVisible(true);
         currentDisplay = trackListDisplay;
+        activeDisplayAction.accept("PLAYLIST");
         draw();
     }
     public void showTrackInfo() {
@@ -118,6 +123,7 @@ public class PlayerDisplay extends StackPane {
         settingsDisplay.setVisible(false);
         trackInfoDisplay.setVisible(true);
         currentDisplay = trackInfoDisplay;
+        activeDisplayAction.accept("TRACKINFO");
         draw();
     }
     public void showSettings() {
@@ -126,6 +132,7 @@ public class PlayerDisplay extends StackPane {
         trackInfoDisplay.setVisible(false);
         settingsDisplay.setVisible(true);
         currentDisplay = settingsDisplay;
+        activeDisplayAction.accept("SETTINGS");
         draw();
     }
     

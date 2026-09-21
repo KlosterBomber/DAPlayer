@@ -78,7 +78,8 @@ public class DAPlayerView extends StackPane {
         displayArea.setAlignment(Pos.TOP_CENTER);
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
-        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, this::redrawUi, controller::seekToMillis);
+        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, this::redrawUi, controller::seekToMillis,
+                                    this::setActiveDisplay);
         display.setPlaylist(playlist);
         displayArea.getChildren().add(display);
 
@@ -110,15 +111,23 @@ public class DAPlayerView extends StackPane {
 
 playPauseButton.setOnMouseClicked(e -> {
     if (!controller.isPlaying()) {
-        controller.play();
-        display.showTrackInfo();
+        if (!playlist.getTracks().isEmpty()) {
+            controller.play();
+            playPauseButton.setText("PLAYING");
+            display.showTrackInfo();
+        }
     } else if (!controller.isPaused()) {
         controller.pause();
+        playPauseButton.setText("PAUSED");
     } else {
         controller.resume();
+        playPauseButton.setText("PLAYING");
     }
 });
-stopButton.setOnMouseClicked(e -> controller.stop());
+stopButton.setOnMouseClicked(e -> {
+    controller.stop();
+    playPauseButton.setText("PLAY/\nPAUSE");
+});
 nextButton.setOnMouseClicked(e -> controller.next());
 previousButton.setOnMouseClicked(e -> controller.previous());
 volumeKnob.setVolumeListener(v -> audioEngine.setVolume((float) v));
@@ -246,6 +255,15 @@ volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
             playlist.addTrack(track);
         }
         display.setPlaylist(playlist);
+    }
+
+    private void setActiveDisplay(String display) {
+        playlistButton.setActive("PLAYLIST".equals(display));
+        trackinfoButton.setActive("TRACKINFO".equals(display));
+        settingsButton.setActive("SETTINGS".equals(display));
+        reserveButton.setActive(false);
+        visualsButton.setActive(false);
+        eqButton.setActive(false);
     }
     
     private void redrawUi() {

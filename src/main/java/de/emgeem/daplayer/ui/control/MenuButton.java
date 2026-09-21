@@ -23,6 +23,8 @@ public class MenuButton extends Canvas {
     private final String text;
     private final Shape shape;
 
+    private boolean active;
+
     public MenuButton(String text, double width, double height, Shape shape) {
         super(width, height);
         this.text = text;
@@ -30,6 +32,8 @@ public class MenuButton extends Canvas {
         hoverProperty().addListener((obs, oldValue, newValue) -> draw());
         draw();
     }
+
+    public void setActive(boolean active) {this.active = active; draw();}
 
     public void draw() {
 
@@ -103,14 +107,26 @@ public class MenuButton extends Canvas {
         gc.setFont(BUTTON_FONT);
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
-        if (isHover()) {
+        if (isHover() || active) {
             gc.setEffect(UiColors.displayGlow());
             gc.setFill(UiColors.accentLight());
         } else {
             gc.setEffect(null);
             gc.setFill(UiColors.getAccent());
         }
-        gc.fillText(text, w / 2, h / 2);
+        gc.fillText(text, w / 2, h / 2 - 3);
+        gc.setEffect(null);
+
+        // AKTIVITÄTSANZEIGE
+        if (active) {
+            gc.setEffect(UiColors.displayGlow());
+            gc.setStroke(UiColors.accentLight());
+        } else {
+            gc.setEffect(null);   
+            gc.setStroke(Color.rgb(35, 35, 35));
+        }
+        gc.setLineWidth(4);
+        gc.strokeLine(w / 2 - 20, h / 2 + 10, w / 2 + 20, h / 2 + 10);
         gc.setEffect(null);
     }
 

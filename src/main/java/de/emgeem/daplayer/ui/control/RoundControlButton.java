@@ -19,20 +19,25 @@ public class RoundControlButton extends Canvas {
     private static final double OUTER = 110;
 
     // LED-RING
-    private static final double LED_OUTER = 97;
-    private static final double LED_INNER = 90;
+    private static final double LED_OUTER = 95;
+    private static final double LED_INNER = 91;
 
     // KAPPE
     private static final double INNER = 80;
 
     private static final Font BUTTON_FONT = Font.loadFont(RoundControlButton.class.getResourceAsStream("/fonts/SairaStencil_Condensed-Black.ttf"), 18);
-    private final String text;
+    private String text;
 
     public RoundControlButton(String text) {
         this.text = text;
         super.setWidth(OUTER + 12);
         super.setHeight(OUTER + 12);
         hoverProperty().addListener((obs, oldValue, newValue) -> draw());
+        draw();
+    }
+
+    public void setText(String text) {
+        this.text = text;
         draw();
     }
 
@@ -67,14 +72,14 @@ public class RoundControlButton extends Canvas {
         // 3. LED-RING
         // ========================================================
 
-        RadialGradient ledSurface = new RadialGradient(0, 0, cx, cy, LED_OUTER / 2, false, CycleMethod.NO_CYCLE, new Stop[] {
-            new Stop(0.00, ledColor.deriveColor(0, 1.0, 1.25, 1.0)),
-            new Stop(0.55, ledColor.deriveColor(0, 1.0, 1.15, 1.0)),
-            new Stop(0.88, ledColor),
-            new Stop(1.00, ledColor.deriveColor(0, 1.0, 0.82, 1.0))
-        });
-        gc.setFill(ledSurface);
-        gc.fillOval(cx - LED_OUTER / 2, cy - LED_OUTER / 2, LED_OUTER, LED_OUTER);
+        // RadialGradient ledSurface = new RadialGradient(0, 0, cx, cy, LED_OUTER / 2, false, CycleMethod.NO_CYCLE, new Stop[] {
+        //     new Stop(0.00, ledColor.deriveColor(0, 1.0, 1.25, 1.0)),
+        //     new Stop(0.55, ledColor.deriveColor(0, 1.0, 1.15, 1.0)),
+        //     new Stop(0.88, ledColor),
+        //     new Stop(1.00, ledColor.deriveColor(0, 1.0, 0.82, 1.0))
+        // });
+        // gc.setFill(UiColors.getAccent());
+        // gc.fillOval(cx - LED_OUTER / 2, cy - LED_OUTER / 2, LED_OUTER, LED_OUTER);
 
         // ========================================================
         // 4. INNERE AUSSPARUNG DES LED-RINGS
