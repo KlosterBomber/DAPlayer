@@ -1,5 +1,7 @@
 package de.emgeem.daplayer.ui.display;
 
+import java.util.function.LongConsumer;
+
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.ui.painter.UiColors;
@@ -30,6 +32,9 @@ public class TrackInfoDisplay extends DisplayMode {
         draw();
     }
 
+    private LongConsumer seekAction;
+    public void setSeekAction(LongConsumer seekAction) {this.seekAction = seekAction;}
+
 
     public TrackInfoDisplay(Font displayFont) {
         this.displayFont = displayFont;
@@ -41,6 +46,8 @@ public class TrackInfoDisplay extends DisplayMode {
             else if (e.getDeltaY() > 0) {playlist.previousTrack();}
             draw();
         });
+        canvas.setOnMousePressed(e -> seekFromMouse(e.getX(), e.getY()));
+        canvas.setOnMouseDragged(e -> seekFromMouse(e.getX(), e.getY()));        
         artworkManager = new ArtworkManager();
     }
    
@@ -132,4 +139,17 @@ public class TrackInfoDisplay extends DisplayMode {
         long seconds = totalSeconds % 60;
         return String.format("%02d:%02d", minutes, seconds);
     }
+
+    private void seekFromMouse(double mouseX, double mouseY) {
+        if (seekAction == null || totalDuration <= 0) {return;}
+        double barWidth = getWidth() - 340;
+        double barX = 170;
+        double barY = 60 + (10 * 28) + 25 - 13;
+        if (mouseX < barX || mouseX > barX + barWidth || mouseY < barY - 8 || mouseY > barY + 21) {return;}
+        double progress = (mouseX - barX) / barWidth;
+        progress = Math.max(0.0, Math.min(1.0, progress));
+        long position = (long) (totalDuration * progress);
+        seekAction.accept(position);
+    }
+
 }

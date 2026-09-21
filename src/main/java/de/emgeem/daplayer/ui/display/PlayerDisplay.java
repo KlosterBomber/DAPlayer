@@ -1,5 +1,7 @@
 package de.emgeem.daplayer.ui.display;
 
+import java.util.function.LongConsumer;
+
 import de.emgeem.daplayer.audio.AudioDeviceManager;
 import de.emgeem.daplayer.model.Playlist;
 import javafx.application.Platform;
@@ -22,7 +24,7 @@ public class PlayerDisplay extends StackPane {
 
     private DisplayMode currentDisplay;
 
-    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Runnable redrawUiAction) {
+    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Runnable redrawUiAction, LongConsumer seekAction) {
         this.redrawUiAction = redrawUiAction;
         setPrefSize(width, height);
         setMaxSize(width, height);
@@ -39,6 +41,7 @@ public class PlayerDisplay extends StackPane {
         trackListDisplay.prefHeightProperty().bind(heightProperty());
 
         trackInfoDisplay = new TrackInfoDisplay(displayFont);
+        trackInfoDisplay.setSeekAction(seekAction);
         trackInfoDisplay.prefWidthProperty().bind(widthProperty());
         trackInfoDisplay.prefHeightProperty().bind(heightProperty());
 

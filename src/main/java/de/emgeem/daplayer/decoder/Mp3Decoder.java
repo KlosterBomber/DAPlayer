@@ -95,6 +95,21 @@ public int decode(byte[] buffer) throws Exception {
 }
 @Override 
 public AudioFormat getAudioFormat() {return format;}
+
+@Override 
+public void seekToMillis(long positionMillis) throws Exception {
+    if (bitstream == null) {return;}
+    positionMillis = Math.max(0, positionMillis);
+    reset();
+    long currentMillis = 0;
+    while (currentMillis < positionMillis) {
+        Header header = bitstream.readFrame();
+        if (header == null) {break;}
+        currentMillis += Math.round(header.ms_per_frame());
+        bitstream.closeFrame();
+    }
+}
+
 @Override 
 public void reset() throws Exception {close(); open(file);}
 @Override 

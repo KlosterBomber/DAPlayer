@@ -13,6 +13,7 @@ public interface AudioDecoder {
     void open(File file) throws Exception;
     int decode(byte[] buffer) throws Exception;
     AudioFormat getAudioFormat();
+    void seekToMillis(long positionMillis) throws Exception;
     void reset() throws Exception;
     void close() throws Exception;
 }

@@ -236,6 +236,22 @@ public class WavDecoder implements AudioDecoder {
         return format;
     }
 
+    @Override 
+    public void seekToMillis(long positionMillis) throws Exception {
+        if (raf == null) {return;}
+        positionMillis = Math.max(0, positionMillis);
+        long bytesPerFrame = (long) channels * bitDepth / 8;
+        if (bytesPerFrame <= 0 || sampleRate <= 0) {return;}
+        long targetFrame = (long) ((positionMillis / 1000.0) * sampleRate);
+        long targetOffset = targetFrame * bytesPerFrame;
+        long targetPosition = dataStart + targetOffset;
+        targetPosition = Math.max(dataStart, Math.min(targetPosition, dataEnd));
+        long relativePosition = targetPosition - dataStart;
+        relativePosition -= relativePosition % bytesPerFrame;
+        targetPosition = dataStart + relativePosition;
+        raf.seek(targetPosition);
+    }
+
     @Override
     public void reset() throws Exception {
         close();

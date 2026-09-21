@@ -26,6 +26,7 @@ public class AudioEngine {
     private Thread playbackThread;
     private Consumer<Track> trackFinishedListener;
 
+    private volatile Long requestedSeekMillis;
     private volatile boolean playing = false;
     private volatile boolean paused = false;
     private float volume = 1.0f;
@@ -88,6 +89,13 @@ public class AudioEngine {
         boolean naturalEnd = false;
         try {
             while (playing && !Thread.currentThread().isInterrupted()) {
+                Long seekPosition = requestedSeekMillis;
+                if (seekPosition != null) {
+                    requestedSeekMillis = null;
+                    decoder.seekToMillis(seekPosition);
+                    currentPositionMillis = seekPosition;
+                    continue;
+                }
                 if (paused) {
                     Thread.sleep(10);
                     continue;
@@ -187,4 +195,12 @@ public class AudioEngine {
 
     public long getCurrentPositionMillis() {return currentPositionMillis;}
     public long getTotalDurationMillis() {return totalDurationMillis;}
+
+    public void seekToMillis(long positionMillis) {
+        if (!playing || decoder == null) {return;}
+        long target = Math.max(0, Math.min(positionMillis, totalDurationMillis));
+        requestedSeekMillis = target;
+        currentPositionMillis = target;
+        if (line != null) {line.flush();}
+    }
 }

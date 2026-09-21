@@ -66,4 +66,8 @@ public class PlayerController {
     public long getTotalDurationMillis() {
         return engine.getTotalDurationMillis();
     }
+
+    public void seekToMillis(long positionMillis) {
+        engine.seekToMillis(positionMillis);
+    }
 }
