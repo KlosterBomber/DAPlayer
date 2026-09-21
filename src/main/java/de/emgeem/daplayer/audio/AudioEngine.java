@@ -24,6 +24,7 @@ public class AudioEngine {
     private AudioDecoder decoder;
     private SourceDataLine line;
     private Thread playbackThread;
+    private Consumer<Track> trackFinishedListener;
 
     private volatile boolean playing = false;
     private volatile boolean paused = false;
@@ -40,6 +41,7 @@ public class AudioEngine {
 
     public boolean isPlaying() {return playing;}
     public boolean isPaused() {return paused;}
+    public void setTrackFinishedListener(Consumer<Track> listener) {this.trackFinishedListener = listener;}
 
     public void play(Track track) {
         stop(); // immer zuerst stoppen
@@ -55,7 +57,7 @@ public class AudioEngine {
             setVolume(volume);
             playing = true;
             paused = false;
-            playbackThread = new Thread(this::runPlayback, "DAPlayer-Playback");
+            playbackThread = new Thread(() -> runPlayback(track), "DAPlayer-Playback");
             playbackThread.setDaemon(true);
             playbackThread.start();
         } catch (Exception e) {
@@ -81,21 +83,36 @@ public class AudioEngine {
         return line;
     }
 
-    private void runPlayback() {
+    private void runPlayback(Track track) {
         byte[] buffer = new byte[8192];
+        boolean naturalEnd = false;
         try {
-            while (playing) {
+            while (playing && !Thread.currentThread().isInterrupted()) {
                 if (paused) {
                     Thread.sleep(10);
                     continue;
                 }
                 int read = decoder.decode(buffer);
-                if (read <= 0) break;
-                line.write(buffer, 0, read);
-                currentPositionMillis += bytesToMillis(read);
+                if (read <= 0) {
+                    naturalEnd = true;
+                    break;
+                }
+                SourceDataLine currentLine = line;
+                if (currentLine == null) {break;}
+                currentLine.write(buffer, 0, read);
+                currentPositionMillis += bytesToMillis(read, currentLine.getFormat());
             }
-        } catch (Exception e) {e.printStackTrace();}
-        cleanup();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            if (playing) {e.printStackTrace();}
+        } finally {
+            boolean wasNaturalEnd = naturalEnd && playing;
+            playing = false;
+            paused = false;
+            cleanup(false);
+            if (wasNaturalEnd && trackFinishedListener != null) {trackFinishedListener.accept(track);}
+        }
     }
 
     public void pause() {if (playing) {paused = true;}}
@@ -105,20 +122,36 @@ public class AudioEngine {
     public void stop() {
         playing = false;
         paused = false;
-        cleanup();
+        Thread thread = playbackThread;
+        if (thread != null && thread != Thread.currentThread()) {
+            thread.interrupt();
+            try {thread.join(1000);}
+            catch (InterruptedException e) {Thread.currentThread().interrupt();}
+        }
+        cleanup(true);
+        playbackThread = null;
     }
 
-    private void cleanup() {
+    private synchronized void cleanup(boolean immediate) {
+        SourceDataLine currentLine = line;
+        line = null;
+        AudioDecoder currentDecoder = decoder;
+        decoder = null;
         try {
-            if (line != null) {
-                line.drain();
-                line.stop();
-                line.close();
-                line = null;
+            if (currentLine != null) {
+                if (immediate) {
+                    currentLine.stop();
+                    currentLine.flush();
+                } else {
+                    currentLine.drain();
+                    currentLine.stop();
+                }
+                currentLine.close();
             }
-            if (decoder != null) {
-                decoder.close();
-                decoder = null;
+        } catch (Exception ignored) {}
+        try {
+            if (currentDecoder != null) {
+                currentDecoder.close();
             }
         } catch (Exception ignored) {}
     }
@@ -146,10 +179,9 @@ public class AudioEngine {
     }
     public boolean isMuted() {return muted;}
 
-    private long bytesToMillis(int bytes) {
-        if (line == null) return 0;
-        AudioFormat f = line.getFormat();
-        float bytesPerSecond = f.getFrameRate() * f.getFrameSize();
+    private long bytesToMillis(int bytes, AudioFormat format) {
+        float bytesPerSecond = format.getFrameRate() * format.getFrameSize();
+        if (bytesPerSecond <= 0) {return 0;}
         return (long) ((bytes / bytesPerSecond) * 1000.0);
     }
 

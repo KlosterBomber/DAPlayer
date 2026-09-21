@@ -2,6 +2,7 @@ package de.emgeem.daplayer.audio;
 
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
+import javafx.application.Platform;
 
 public class PlayerController {
 
@@ -11,12 +12,21 @@ public class PlayerController {
     public PlayerController(AudioEngine engine, Playlist playlist) {
         this.engine = engine;
         this.playlist = playlist;
+        engine.setTrackFinishedListener(track ->
+            Platform.runLater(() -> {
+                if (playlist.hasNextTrack()) {
+                    playlist.nextTrack();
+                    play();
+                } else {
+                    engine.stop();
+                }
+            })
+        );
     }
 
     public void play() {
         Track track = playlist.getCurrentTrack();
         if (track == null) return;
-
         engine.play(track);
     }
 
@@ -33,13 +43,12 @@ public class PlayerController {
     }
 
     public void next() {
-        playlist.nextTrack();
-        play();
+        if (playlist.nextTrack()) {play();}
+        else {engine.stop();}
     }
 
     public void previous() {
-        playlist.previousTrack();
-        play();
+        if (playlist.previousTrack()) {play();}
     }
 
     public boolean isPlaying() {
@@ -48,5 +57,13 @@ public class PlayerController {
 
     public boolean isPaused() {
         return engine.isPaused();
+    }
+
+    public long getCurrentPositionMillis() {
+        return engine.getCurrentPositionMillis();
+    }
+
+    public long getTotalDurationMillis() {
+        return engine.getTotalDurationMillis();
     }
 }

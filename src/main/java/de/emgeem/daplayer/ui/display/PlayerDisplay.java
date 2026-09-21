@@ -132,4 +132,8 @@ public class PlayerDisplay extends StackPane {
         trackInfoDisplay.setPlaylist(playlist);
         draw();
     }
+
+    public void updatePlaybackProgress(long position, long duration) {
+        trackInfoDisplay.setPlaybackProgress(position, duration);
+    }
 }

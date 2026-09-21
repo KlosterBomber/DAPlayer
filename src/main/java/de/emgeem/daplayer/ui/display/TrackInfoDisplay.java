@@ -23,6 +23,12 @@ public class TrackInfoDisplay extends DisplayMode {
 
     public void setPlaybackPosition(long position) {this.currentPosition = position; draw();}
     public void setDuration(long duration) {this.totalDuration = duration; draw();}
+    public void setPlaybackProgress(long position, long duration) {
+        if (this.currentPosition == position && this.totalDuration == duration) {return;}
+        this.currentPosition = position;
+        this.totalDuration = duration;
+        draw();
+    }
 
 
     public TrackInfoDisplay(Font displayFont) {
@@ -96,7 +102,7 @@ public class TrackInfoDisplay extends DisplayMode {
         progress = Math.max(0.0, Math.min(1.0, progress));
         gc.setFill(Color.rgb(35, 35, 35));
         gc.fillRoundRect(170, y - 13, barWidth, barHeight, 8, 8);
-        gc.setFill(UiColors.getAccent());
+        gc.setFill(UiColors.accentLight());
         gc.fillRoundRect(170, y - 13, barWidth * progress, barHeight, 8, 8);
 
         if (artwork != null) {

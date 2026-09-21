@@ -22,8 +22,21 @@ public class Playlist {
     public int getCurrentIndex() {return currentIndex;}
     public void setCurrentIndex(int index) {if (index >= 0 && index < tracks.size()) {currentIndex = index;}}
 
-    public void nextTrack() {if (currentIndex < tracks.size()) {currentIndex++;}}
-    public void previousTrack() {if (currentIndex > 0) {currentIndex--;}}
+    public boolean nextTrack() {
+        if (currentIndex + 1 < tracks.size()) {
+            currentIndex++;
+            return true;
+        }
+        return false;
+    }
+    public boolean previousTrack() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            return true;
+        }
+        return false;
+    }
+    public boolean hasNextTrack() {return currentIndex >= 0 && currentIndex + 1 < tracks.size();}
 
     public void addTrack(Track track) {
         tracks.add(track);

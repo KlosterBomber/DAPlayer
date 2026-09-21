@@ -16,6 +16,7 @@ import de.emgeem.daplayer.ui.control.OffButton;
 import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.VolumeKnob;
 import de.emgeem.daplayer.ui.display.PlayerDisplay;
+import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
@@ -110,6 +111,7 @@ public class DAPlayerView extends StackPane {
 playPauseButton.setOnMouseClicked(e -> {
     if (!controller.isPlaying()) {
         controller.play();
+        display.showTrackInfo();
     } else if (!controller.isPaused()) {
         controller.pause();
     } else {
@@ -195,7 +197,15 @@ volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
 
                 offButton,
                 moveButton
-        );                
+        );
+        
+        AnimationTimer progressTimer = new AnimationTimer() {
+            @Override 
+            public void handle(long now) {
+                display.updatePlaybackProgress(controller.getCurrentPositionMillis(), controller.getTotalDurationMillis());
+            }
+        };
+        progressTimer.start();
     }
 
     private void openFiles() {
