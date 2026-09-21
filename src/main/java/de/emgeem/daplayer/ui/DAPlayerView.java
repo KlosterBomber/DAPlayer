@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.List;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
+import de.emgeem.daplayer.audio.AudioEngine;
+import de.emgeem.daplayer.audio.PlayerController;
 import de.emgeem.daplayer.decoder.DecoderManager;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
@@ -50,11 +52,16 @@ public class DAPlayerView extends StackPane {
     private final MenuButton visualsButton;
     private final MenuButton eqButton;
     private final MenuButton moveButton;
+    private final AudioEngine audioEngine;
+    private final PlayerController controller;
 
     private double dragX;
     private double dragY;
 
     public DAPlayerView() {
+
+        audioEngine = new AudioEngine(audioDeviceManager, decoderManager);
+        controller = new PlayerController(audioEngine, playlist);
 
         PlayerViewBackground background = new PlayerViewBackground(1200, 675);
 
@@ -99,6 +106,22 @@ public class DAPlayerView extends StackPane {
         volumeKnob.setTranslateY(-5);
         playPauseButton.setTranslateY(+25);
         nextButton.setTranslateY(+25);
+
+playPauseButton.setOnMouseClicked(e -> {
+    if (!controller.isPlaying()) {
+        controller.play();
+    } else if (!controller.isPaused()) {
+        controller.pause();
+    } else {
+        controller.resume();
+    }
+});
+stopButton.setOnMouseClicked(e -> controller.stop());
+nextButton.setOnMouseClicked(e -> controller.next());
+previousButton.setOnMouseClicked(e -> controller.previous());
+volumeKnob.setVolumeListener(v -> audioEngine.setVolume((float) v));
+volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
+
 
 // MENU BUTTONS
     
@@ -183,15 +206,10 @@ public class DAPlayerView extends StackPane {
         );
         List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
         if (files != null) {
-            for (File file : files) {Track track = decoderManager.readTrack(file);
-            playlist.addTrack(track);
-                            
-            System.out.println(
-                track.getFileName()
-                + " | Titel: " + track.getTitle()
-                + " | Artist: " + track.getArtist()
-                + " | Album: " + track.getAlbum()
-            );}
+            for (File file : files) {
+                Track track = decoderManager.readTrack(file);
+                playlist.addTrack(track);
+        }
             display.setPlaylist(playlist);
         }
     }
@@ -216,12 +234,6 @@ public class DAPlayerView extends StackPane {
             }
             Track track = decoderManager.readTrack(file);
             playlist.addTrack(track);
-            System.out.println(
-                track.getFileName()
-                + " | Titel: " + track.getTitle()
-                + " | Artist: " + track.getArtist()
-                + " | Album: " + track.getAlbum()
-            );
         }
         display.setPlaylist(playlist);
     }

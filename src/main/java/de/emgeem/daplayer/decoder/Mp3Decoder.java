@@ -1,14 +1,29 @@
 package de.emgeem.daplayer.decoder;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.sound.sampled.AudioFormat;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.Tag;
 
 import de.emgeem.daplayer.model.Track;
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.Decoder;
+import javazoom.jl.decoder.Header;
+import javazoom.jl.decoder.SampleBuffer;
 
 public class Mp3Decoder implements AudioDecoder {
+
+private File file;
+private Bitstream bitstream;
+private Decoder decoder;
+private AudioFormat format;
 
     @Override
     public boolean supports(File file) {
@@ -43,6 +58,51 @@ public class Mp3Decoder implements AudioDecoder {
         }
         return track;
     }
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+@Override 
+public void open(File file) throws Exception {
+    this.file = file;
+    InputStream in = new BufferedInputStream(new FileInputStream(file));
+    bitstream = new Bitstream(in);
+    decoder = new Decoder();
+    Header header = bitstream.readFrame();
+    if (header == null) {
+        throw new IOException("MP3 header not readable");
+    }
+    int sampleRate = header.frequency();
+    int channels = header.mode() == Header.SINGLE_CHANNEL ? 1 : 2;
+    format = new AudioFormat(sampleRate, 16, channels, true, false);
+    bitstream.unreadFrame();
+}
+@Override 
+public int decode(byte[] buffer) throws Exception {
+    Header header = bitstream.readFrame();
+    if (header == null) {return -1;}
+    SampleBuffer output = (SampleBuffer) decoder.decodeFrame(header, bitstream);
+    short[] pcm = output.getBuffer();
+    int pcmBytes = pcm.length * 2;
+    if (buffer.length < pcmBytes) throw new IllegalArgumentException("buffer too small: need " + pcmBytes);
+    for (int i = 0; i < pcm.length; i++) {
+        buffer[i * 2] = (byte) (pcm[i] & 0xff);
+        buffer[i * 2 + 1] = (byte) ((pcm[i] >> 8) & 0xff);
+    }
+    bitstream.closeFrame();
+    return pcmBytes;
+}
+@Override 
+public AudioFormat getAudioFormat() {return format;}
+@Override 
+public void reset() throws Exception {close(); open(file);}
+@Override 
+public void close() throws Exception {if (bitstream != null) {bitstream.close();}}
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     private int parseNumber(String value) {
         try {

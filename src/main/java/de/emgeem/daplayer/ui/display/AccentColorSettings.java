@@ -1,7 +1,6 @@
 package de.emgeem.daplayer.ui.display;
 
 import de.emgeem.daplayer.ui.painter.UiColors;
-
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
@@ -41,10 +40,8 @@ public class AccentColorSettings extends StackPane {
         });
         setOnMouseReleased(e -> activeChannel = -1);
         setOnMouseClicked(e -> {
-            System.out.println("ACCENT CLICK: " + e.getX() + " / " + e.getY());
             if (e.getX() >= 800 && e.getX() <= 910 && e.getY() >= 210 && e.getY() <= 240) {
                 UiColors.setAccent(Color.rgb(red, green, blue));
-                System.out.println("APPLIED: " + red + " / " + green + " / " + blue);
                 redrawAction.run();
             }
         });

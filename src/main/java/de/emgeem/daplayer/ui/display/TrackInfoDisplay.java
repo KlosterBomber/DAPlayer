@@ -6,6 +6,7 @@ import de.emgeem.daplayer.ui.painter.UiColors;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class TrackInfoDisplay extends DisplayMode {
@@ -15,6 +16,13 @@ public class TrackInfoDisplay extends DisplayMode {
     private final ArtworkManager artworkManager;
 
     private Playlist playlist;
+
+    private long currentPosition;
+    private long totalDuration;
+    private long playbackPosition;
+
+    public void setPlaybackPosition(long position) {this.currentPosition = position; draw();}
+    public void setDuration(long duration) {this.totalDuration = duration; draw();}
 
 
     public TrackInfoDisplay(Font displayFont) {
@@ -78,6 +86,19 @@ public class TrackInfoDisplay extends DisplayMode {
         y += lineHeight;
         gc.fillText("DURATION", xLabel, y);
         gc.fillText(formatDuration(track.getDuration()), xValue, y);
+
+        y += lineHeight + 25;
+        double barWidth = w - 340;
+        double barHeight = 13;
+        double progress = totalDuration > 0 ? (double) currentPosition / totalDuration : 0.0;
+        gc.fillText(formatDuration(currentPosition), 100, y);
+        gc.fillText(formatDuration(totalDuration), w - 150, y);
+        progress = Math.max(0.0, Math.min(1.0, progress));
+        gc.setFill(Color.rgb(35, 35, 35));
+        gc.fillRoundRect(170, y - 13, barWidth, barHeight, 8, 8);
+        gc.setFill(UiColors.getAccent());
+        gc.fillRoundRect(170, y - 13, barWidth * progress, barHeight, 8, 8);
+
         if (artwork != null) {
             double boxX = 850;
             double boxY = 50;
