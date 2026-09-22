@@ -86,6 +86,7 @@ public class DAPlayerView extends StackPane {
         display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, equalizer, this::redrawUi, controller::seekToMillis,
                                     this::setActiveDisplay);
         display.setPlaylist(playlist);
+        audioEngine.setVisualizationListener(display.getVisualizationListener());
         displayArea.getChildren().add(display);
 
     // CONTROL AREA

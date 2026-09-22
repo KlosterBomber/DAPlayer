@@ -11,6 +11,8 @@ public class SpectrumVisualization {
     private double width;
     private double height;
 
+    private static final int BAR_COUNT = 80;
+
     private float[] samples;
     private float sampleRate;
 
@@ -38,12 +40,15 @@ public class SpectrumVisualization {
         fft(real, imag);
         int binCount = fftSize / 2;
         double barWidth = width / binCount;
-        gc.setFill(UiColors.accentLight());
-        for (int i = 0; i < binCount; i++) {
+        gc.setFill(UiColors.getAccent());
+        for (int i = 1; i < binCount; i++) {
             double magnitude = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
             double level = magnitude / fftSize;
-            double barHeight = level * height * 8.0;
-            if (barHeight > height) {barHeight = height;}
+            // logarithmische Pegeldarstellung
+            double db = 20.0 * Math.log10(level + 1e-9);
+            double normalized = (db + 80.0) / 80.0;
+            normalized = Math.max(0.0, Math.min(1.0, normalized));
+            double barHeight = normalized * height;
             double x = i * barWidth;
             double y = height - barHeight;
             gc.fillRect(x, y, Math.max(1, barWidth - 1), barHeight);

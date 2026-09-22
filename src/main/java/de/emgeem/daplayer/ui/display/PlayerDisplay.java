@@ -5,6 +5,7 @@ import java.util.function.LongConsumer;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
 import de.emgeem.daplayer.audio.Equalizer;
+import de.emgeem.daplayer.audio.VisualizationListener;
 import de.emgeem.daplayer.model.Playlist;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -190,4 +191,6 @@ public class PlayerDisplay extends StackPane {
     public void updatePlaybackProgress(long position, long duration) {
         trackInfoDisplay.setPlaybackProgress(position, duration);
     }
+
+    public VisualizationListener getVisualizationListener() {return visualsDisplay;}
 }

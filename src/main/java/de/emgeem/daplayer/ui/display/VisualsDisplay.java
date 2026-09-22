@@ -3,6 +3,8 @@ package de.emgeem.daplayer.ui.display;
 import de.emgeem.daplayer.audio.VisualizationData;
 import de.emgeem.daplayer.audio.VisualizationListener;
 import de.emgeem.daplayer.ui.display.visual.SpectrumVisualization;
+import de.emgeem.daplayer.ui.display.visual.VuVisualization;
+import de.emgeem.daplayer.ui.display.visual.WaveformVisualization;
 import de.emgeem.daplayer.ui.painter.UiColors;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
@@ -16,6 +18,8 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
     private final Canvas canvas;
 
     private SpectrumVisualization spectrumVisualization;
+    private WaveformVisualization waveformVisualization;
+    private VuVisualization vuVisualization;
     private VisualizationData latestData;
     private VisualizationMode currentMode = VisualizationMode.SPECTRUM;
 
@@ -24,17 +28,31 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
         canvas = new Canvas();
         getChildren().add(canvas);
         spectrumVisualization = new SpectrumVisualization(canvas.getGraphicsContext2D());
+        waveformVisualization = new WaveformVisualization(canvas.getGraphicsContext2D());
+        vuVisualization = new VuVisualization(canvas.getGraphicsContext2D());
         AnimationTimer animationTimer = new AnimationTimer() {
             @Override 
             public void handle(long now) {
                 if (latestData == null) {return;}
-                spectrumVisualization.setSize(canvas.getWidth(), 300);
-                spectrumVisualization.update(latestData);
+                double visualWidth = canvas.getWidth() - 60;
+                double visualHeight = 300;
                 GraphicsContext gc = canvas.getGraphicsContext2D();
-                gc.clearRect(30, 30, canvas.getWidth() - 60, 300);
+                gc.clearRect(30, 30, visualWidth, visualHeight);
                 gc.save();
                 gc.translate(30, 30);
-                spectrumVisualization.draw();
+                if (currentMode == VisualizationMode.SPECTRUM) {
+                    spectrumVisualization.setSize(visualWidth, visualHeight);
+                    spectrumVisualization.update(latestData);
+                    spectrumVisualization.draw();
+                } else if (currentMode == VisualizationMode.WAVEFORM) {
+                    waveformVisualization.setSize(visualWidth, visualHeight);
+                    waveformVisualization.update(latestData);
+                    waveformVisualization.draw();
+                } else if (currentMode == VisualizationMode.VU_METER) {
+                    vuVisualization.setSize(visualWidth, visualHeight);
+                    vuVisualization.update(latestData);
+                    vuVisualization.draw();
+                }
                 gc.restore();
             }
         };
