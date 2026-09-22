@@ -5,6 +5,8 @@ import java.util.List;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
 import de.emgeem.daplayer.audio.AudioEngine;
+import de.emgeem.daplayer.audio.Equalizer;
+import de.emgeem.daplayer.audio.EqualizerSettings;
 import de.emgeem.daplayer.audio.PlayerController;
 import de.emgeem.daplayer.decoder.DecoderManager;
 import de.emgeem.daplayer.model.Playlist;
@@ -55,13 +57,16 @@ public class DAPlayerView extends StackPane {
     private final MenuButton moveButton;
     private final AudioEngine audioEngine;
     private final PlayerController controller;
+    private final Equalizer equalizer;
 
     private double dragX;
     private double dragY;
 
     public DAPlayerView() {
 
-        audioEngine = new AudioEngine(audioDeviceManager, decoderManager);
+        equalizer = new Equalizer();
+        EqualizerSettings.load(equalizer);
+        audioEngine = new AudioEngine(audioDeviceManager, decoderManager, equalizer);
         controller = new PlayerController(audioEngine, playlist);
 
         PlayerViewBackground background = new PlayerViewBackground(1200, 675);
@@ -78,7 +83,7 @@ public class DAPlayerView extends StackPane {
         displayArea.setAlignment(Pos.TOP_CENTER);
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
-        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, this::redrawUi, controller::seekToMillis,
+        display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, equalizer, this::redrawUi, controller::seekToMillis,
                                     this::setActiveDisplay);
         display.setPlaylist(playlist);
         displayArea.getChildren().add(display);
@@ -165,6 +170,7 @@ volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
         visualsButton.setTranslateY(425);
 
         eqButton = new MenuButton("EQUALIZER", 150, 40, MenuButton.Shape.CENTER);
+        eqButton.setOnMouseClicked(e -> display.showEqualizer());
         StackPane.setAlignment(eqButton, Pos.TOP_RIGHT);
         eqButton.setTranslateX(-25);
         eqButton.setTranslateY(425);
@@ -263,7 +269,7 @@ volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
         settingsButton.setActive("SETTINGS".equals(display));
         reserveButton.setActive(false);
         visualsButton.setActive(false);
-        eqButton.setActive(false);
+        eqButton.setActive("EQUALIZER".equals(display));
     }
     
     private void redrawUi() {

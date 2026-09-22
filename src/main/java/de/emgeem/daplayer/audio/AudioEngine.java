@@ -20,6 +20,7 @@ public class AudioEngine {
     private final AudioDeviceManager deviceManager;
     private final DecoderManager decoderManager;
     private final List<Consumer<Float>> volumeListeners = new ArrayList<>();
+    private final Equalizer equalizer;
 
     private AudioDecoder decoder;
     private SourceDataLine line;
@@ -35,9 +36,10 @@ public class AudioEngine {
     private long currentPositionMillis;
     private long totalDurationMillis;
 
-    public AudioEngine(AudioDeviceManager deviceManager, DecoderManager decoderManager) {
+    public AudioEngine(AudioDeviceManager deviceManager, DecoderManager decoderManager, Equalizer equalizer) {
         this.deviceManager = deviceManager;
         this.decoderManager = decoderManager;
+        this.equalizer = equalizer;
     }
 
     public boolean isPlaying() {return playing;}
@@ -107,6 +109,7 @@ public class AudioEngine {
                 }
                 SourceDataLine currentLine = line;
                 if (currentLine == null) {break;}
+                equalizer.process(buffer, read, currentLine.getFormat());
                 currentLine.write(buffer, 0, read);
                 currentPositionMillis += bytesToMillis(read, currentLine.getFormat());
             }

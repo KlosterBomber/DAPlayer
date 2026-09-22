@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
+import de.emgeem.daplayer.audio.Equalizer;
 import de.emgeem.daplayer.model.Playlist;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -21,13 +22,14 @@ public class PlayerDisplay extends StackPane {
     private final TrackListDisplay trackListDisplay;
     private final TrackInfoDisplay trackInfoDisplay;
     private final SettingsDisplay settingsDisplay;
+    private final EqualizerDisplay equalizerDisplay;
     private final Runnable redrawUiAction;
     private final Consumer<String> activeDisplayAction;
 
     private DisplayMode currentDisplay;
 
-    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Runnable redrawUiAction,
-                         LongConsumer seekAction, Consumer<String> activeDisplayAction) {
+    public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Equalizer equalizer,
+                         Runnable redrawUiAction, LongConsumer seekAction, Consumer<String> activeDisplayAction) {
         this.redrawUiAction = redrawUiAction;
         this.activeDisplayAction = activeDisplayAction;
         setPrefSize(width, height);
@@ -53,15 +55,22 @@ public class PlayerDisplay extends StackPane {
         settingsDisplay.prefWidthProperty().bind(widthProperty());
         settingsDisplay.prefHeightProperty().bind(heightProperty());
 
-        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay);
+        equalizerDisplay = new EqualizerDisplay(displayFont, equalizer);
+        equalizerDisplay.prefWidthProperty().bind(widthProperty());
+        equalizerDisplay.prefHeightProperty().bind(heightProperty());
+
+
+        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay, equalizerDisplay);
         trackListDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        equalizerDisplay.setVisible(false);
 
         StackPane.setAlignment(startDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(trackListDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(trackInfoDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(settingsDisplay, Pos.TOP_LEFT);
+        StackPane.setAlignment(equalizerDisplay, Pos.TOP_LEFT);
         currentDisplay = startDisplay;
 
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -112,6 +121,7 @@ public class PlayerDisplay extends StackPane {
         startDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        equalizerDisplay.setVisible(false);
         trackListDisplay.setVisible(true);
         currentDisplay = trackListDisplay;
         activeDisplayAction.accept("PLAYLIST");
@@ -121,6 +131,7 @@ public class PlayerDisplay extends StackPane {
         startDisplay.setVisible(false);
         trackListDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        equalizerDisplay.setVisible(false);
         trackInfoDisplay.setVisible(true);
         currentDisplay = trackInfoDisplay;
         activeDisplayAction.accept("TRACKINFO");
@@ -130,9 +141,20 @@ public class PlayerDisplay extends StackPane {
         startDisplay.setVisible(false);
         trackListDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
+        equalizerDisplay.setVisible(false);
         settingsDisplay.setVisible(true);
         currentDisplay = settingsDisplay;
         activeDisplayAction.accept("SETTINGS");
+        draw();
+    }
+    public void showEqualizer() {
+        startDisplay.setVisible(false);
+        trackListDisplay.setVisible(false);
+        trackInfoDisplay.setVisible(false);
+        settingsDisplay.setVisible(false);
+        equalizerDisplay.setVisible(true);
+        currentDisplay = equalizerDisplay;
+        activeDisplayAction.accept("EQUALIZER");
         draw();
     }
     
