@@ -26,6 +26,7 @@ public class AudioEngine {
     private SourceDataLine line;
     private Thread playbackThread;
     private Consumer<Track> trackFinishedListener;
+    private VisualizationListener visualizationListener;
 
     private volatile Long requestedSeekMillis;
     private volatile boolean playing = false;
@@ -45,6 +46,7 @@ public class AudioEngine {
     public boolean isPlaying() {return playing;}
     public boolean isPaused() {return paused;}
     public void setTrackFinishedListener(Consumer<Track> listener) {this.trackFinishedListener = listener;}
+    public void setVisualizationListener(VisualizationListener listener) {this.visualizationListener = listener;}
 
     public void play(Track track) {
         stop(); // immer zuerst stoppen
@@ -110,6 +112,10 @@ public class AudioEngine {
                 SourceDataLine currentLine = line;
                 if (currentLine == null) {break;}
                 equalizer.process(buffer, read, currentLine.getFormat());
+if (visualizationListener != null) {
+    float[] samples = decodeVisualizationSamples(buffer, read, currentLine.getFormat());
+    visualizationListener.onAudioData(new VisualizationData(samples, currentLine.getFormat().getSampleRate()));
+}
                 currentLine.write(buffer, 0, read);
                 currentPositionMillis += bytesToMillis(read, currentLine.getFormat());
             }
@@ -205,5 +211,22 @@ public class AudioEngine {
         requestedSeekMillis = target;
         currentPositionMillis = target;
         if (line != null) {line.flush();}
+    }
+
+    private float[] decodeVisualizationSamples(byte[] buffer, int length, AudioFormat format) {
+        int channels = format.getChannels();
+        int frameSize = format.getFrameSize();
+        int frameCount = length / frameSize;
+        float[] samples = new float[frameCount];
+        for (int frame = 0; frame < frameCount; frame++) {
+            double sum = 0.0;
+            for (int channel = 0; channel < channels; channel++) {
+                int index = frame * frameSize + channel * 2;
+                short sample = (short) ((buffer[index + 1] << 8) | (buffer[index] & 0xff));
+                sum += sample / 32768.0;
+            }
+            samples[frame] = (float) (sum / channels);
+        }
+        return samples;    
     }
 }

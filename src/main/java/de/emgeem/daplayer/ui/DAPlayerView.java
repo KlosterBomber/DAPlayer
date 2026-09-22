@@ -165,6 +165,7 @@ volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
         reserveButton.setTranslateY(425);
 
         visualsButton = new MenuButton("VISUALS", 150, 40, MenuButton.Shape.CENTER);
+        visualsButton.setOnMouseClicked(e -> display.showVisuals());
         StackPane.setAlignment(visualsButton, Pos.TOP_RIGHT);
         visualsButton.setTranslateX(-175);
         visualsButton.setTranslateY(425);
@@ -268,7 +269,7 @@ volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
         trackinfoButton.setActive("TRACKINFO".equals(display));
         settingsButton.setActive("SETTINGS".equals(display));
         reserveButton.setActive(false);
-        visualsButton.setActive(false);
+        visualsButton.setActive("VISUALS".equals(display));
         eqButton.setActive("EQUALIZER".equals(display));
     }
     

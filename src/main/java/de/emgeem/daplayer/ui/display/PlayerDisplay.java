@@ -22,6 +22,7 @@ public class PlayerDisplay extends StackPane {
     private final TrackListDisplay trackListDisplay;
     private final TrackInfoDisplay trackInfoDisplay;
     private final SettingsDisplay settingsDisplay;
+    private final VisualsDisplay visualsDisplay;
     private final EqualizerDisplay equalizerDisplay;
     private final Runnable redrawUiAction;
     private final Consumer<String> activeDisplayAction;
@@ -55,21 +56,27 @@ public class PlayerDisplay extends StackPane {
         settingsDisplay.prefWidthProperty().bind(widthProperty());
         settingsDisplay.prefHeightProperty().bind(heightProperty());
 
+        visualsDisplay = new VisualsDisplay(displayFont);
+        visualsDisplay.prefWidthProperty().bind(widthProperty());
+        visualsDisplay.prefHeightProperty().bind(heightProperty());        
+
         equalizerDisplay = new EqualizerDisplay(displayFont, equalizer);
         equalizerDisplay.prefWidthProperty().bind(widthProperty());
         equalizerDisplay.prefHeightProperty().bind(heightProperty());
 
 
-        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay, equalizerDisplay);
+        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay,visualsDisplay, equalizerDisplay);
         trackListDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        visualsDisplay.setVisible(false);
         equalizerDisplay.setVisible(false);
 
         StackPane.setAlignment(startDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(trackListDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(trackInfoDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(settingsDisplay, Pos.TOP_LEFT);
+        StackPane.setAlignment(visualsDisplay, Pos.TOP_LEFT);
         StackPane.setAlignment(equalizerDisplay, Pos.TOP_LEFT);
         currentDisplay = startDisplay;
 
@@ -121,6 +128,7 @@ public class PlayerDisplay extends StackPane {
         startDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        visualsDisplay.setVisible(false);
         equalizerDisplay.setVisible(false);
         trackListDisplay.setVisible(true);
         currentDisplay = trackListDisplay;
@@ -131,6 +139,7 @@ public class PlayerDisplay extends StackPane {
         startDisplay.setVisible(false);
         trackListDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        visualsDisplay.setVisible(false);
         equalizerDisplay.setVisible(false);
         trackInfoDisplay.setVisible(true);
         currentDisplay = trackInfoDisplay;
@@ -141,10 +150,22 @@ public class PlayerDisplay extends StackPane {
         startDisplay.setVisible(false);
         trackListDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
+        visualsDisplay.setVisible(false);
         equalizerDisplay.setVisible(false);
         settingsDisplay.setVisible(true);
         currentDisplay = settingsDisplay;
         activeDisplayAction.accept("SETTINGS");
+        draw();
+    }
+    public void showVisuals() {
+        startDisplay.setVisible(false);
+        trackListDisplay.setVisible(false);
+        trackInfoDisplay.setVisible(false);
+        settingsDisplay.setVisible(false);
+        equalizerDisplay.setVisible(false);
+        visualsDisplay.setVisible(true);
+        currentDisplay = visualsDisplay;
+        activeDisplayAction.accept("VISUALS");
         draw();
     }
     public void showEqualizer() {
@@ -152,6 +173,7 @@ public class PlayerDisplay extends StackPane {
         trackListDisplay.setVisible(false);
         trackInfoDisplay.setVisible(false);
         settingsDisplay.setVisible(false);
+        visualsDisplay.setVisible(false);
         equalizerDisplay.setVisible(true);
         currentDisplay = equalizerDisplay;
         activeDisplayAction.accept("EQUALIZER");
