@@ -112,10 +112,12 @@ public class AudioEngine {
                 SourceDataLine currentLine = line;
                 if (currentLine == null) {break;}
                 equalizer.process(buffer, read, currentLine.getFormat());
-if (visualizationListener != null) {
-    float[] samples = decodeVisualizationSamples(buffer, read, currentLine.getFormat());
-    visualizationListener.onAudioData(new VisualizationData(samples, currentLine.getFormat().getSampleRate()));
-}
+                if (visualizationListener != null) {
+                    AudioFormat format = currentLine.getFormat();
+                    float[] samples = decodeVisualizationSamples(buffer, read, format);
+                    double[] levels = calculateVisualizationLevels(buffer, read, format);
+                    visualizationListener.onAudioData(new VisualizationData(samples, format.getSampleRate(), levels[0], levels[1], levels[2], levels[3]));
+                }
                 currentLine.write(buffer, 0, read);
                 currentPositionMillis += bytesToMillis(read, currentLine.getFormat());
             }
@@ -228,5 +230,35 @@ if (visualizationListener != null) {
             samples[frame] = (float) (sum / channels);
         }
         return samples;    
+    }
+
+    private double[] calculateVisualizationLevels(byte[] buffer, int length, AudioFormat format) {
+        int channels = format.getChannels();
+        int frameSize = format.getFrameSize();
+        int frameCount = length / frameSize;
+        double leftPeak = 0.0;
+        double rightPeak = 0.0;
+        double leftSum = 0.0;
+        double rightSum = 0.0;
+        for (int frame = 0; frame < frameCount; frame++) {
+            int frameStart = frame * frameSize;
+            double left = decodeSample(buffer, frameStart, format);
+            double right;
+            if (channels > 1) {right = decodeSample(buffer, frameStart + 2, format);}
+            else {right = left;}
+            leftPeak = Math.max(leftPeak, Math.abs(left));
+            rightPeak = Math.max(rightPeak, Math.abs(right));
+            leftSum += left * left;
+            rightSum += right * right;
+        }
+        double leftRms = frameCount > 0 ? Math.sqrt(leftSum / frameCount) : 0.0;
+        double rightRms = frameCount > 0 ? Math.sqrt(rightSum / frameCount) : 0.0;
+        return new double[] {leftPeak, rightPeak, leftRms, rightRms};
+    }
+
+    private double decodeSample(byte[] buffer, int index, AudioFormat format) {
+        if (format.getSampleSizeInBits() != 16) {return 0.0;}
+        short sample = (short) ((buffer[index +1] << 8) | (buffer[index] & 0xff));
+        return sample / 32768.0;
     }
 }
