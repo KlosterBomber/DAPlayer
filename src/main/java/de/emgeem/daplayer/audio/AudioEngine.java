@@ -115,8 +115,11 @@ public class AudioEngine {
                 if (visualizationListener != null) {
                     AudioFormat format = currentLine.getFormat();
                     float[] samples = decodeVisualizationSamples(buffer, read, format);
+                    float[][] channels = decodeVisualizationChannels(buffer, read, format);
+                    float[] leftSamples = channels[0];
+                    float[] rightSamples = channels[1];
                     double[] levels = calculateVisualizationLevels(buffer, read, format);
-                    visualizationListener.onAudioData(new VisualizationData(samples, format.getSampleRate(), levels[0], levels[1], levels[2], levels[3]));
+                    visualizationListener.onAudioData(new VisualizationData(samples, format.getSampleRate(), levels[0], levels[1], levels[2], levels[3], leftSamples, rightSamples));
                 }
                 currentLine.write(buffer, 0, read);
                 currentPositionMillis += bytesToMillis(read, currentLine.getFormat());
@@ -221,15 +224,31 @@ public class AudioEngine {
         int frameCount = length / frameSize;
         float[] samples = new float[frameCount];
         for (int frame = 0; frame < frameCount; frame++) {
+            int frameStart = frame * frameSize;
             double sum = 0.0;
             for (int channel = 0; channel < channels; channel++) {
-                int index = frame * frameSize + channel * 2;
+                int index = frameStart + channel * 2;
                 short sample = (short) ((buffer[index + 1] << 8) | (buffer[index] & 0xff));
                 sum += sample / 32768.0;
             }
             samples[frame] = (float) (sum / channels);
         }
-        return samples;    
+        return samples;
+    }    
+
+    private float[][] decodeVisualizationChannels(byte[] buffer, int length, AudioFormat format) {
+        int channels = format.getChannels();
+        int frameSize = format.getFrameSize();
+        int frameCount = length / frameSize;
+        float[] left = new float[frameCount];
+        float[] right = new float[frameCount];
+        for (int frame = 0; frame < frameCount; frame++) {
+            int frameStart = frame * frameSize;
+            left[frame] = (float) decodeSample(buffer, frameStart, format);
+            if (channels > 1) {right[frame] = (float) decodeSample(buffer, frameStart + 2, format);} 
+            else {right[frame] = left[frame];}
+        }
+        return new float[][] {left, right};
     }
 
     private double[] calculateVisualizationLevels(byte[] buffer, int length, AudioFormat format) {

@@ -6,6 +6,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 public class VuVisualization {
 
@@ -18,9 +19,8 @@ public class VuVisualization {
     private static final Color COLOR_HIGHLIGHT = Color.rgb(255, 255, 255, 0.18);
 
     private final GraphicsContext gc;
-
+    private final Font scaleFont;
     private final DropShadow greenGlow = new DropShadow();
-    private final DropShadow yellowGlow = new DropShadow();
     private final DropShadow redGlow = new DropShadow();
 
     private double width;
@@ -32,16 +32,12 @@ public class VuVisualization {
 
     public VuVisualization(GraphicsContext gc) {
         this.gc = gc;
+        scaleFont = javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"), 18);
 
         greenGlow.setBlurType(BlurType.GAUSSIAN);
         greenGlow.setRadius(8);
         greenGlow.setSpread(0.5);
-        greenGlow.setColor(Color.web("#1cbd00"));
-
-        yellowGlow.setBlurType(BlurType.GAUSSIAN);
-        yellowGlow.setRadius(8);
-        yellowGlow.setSpread(0.5);
-        yellowGlow.setColor(Color.web("#c79f00"));
+        greenGlow.setColor(Color.web("#4fc03b"));
 
         redGlow.setBlurType(BlurType.GAUSSIAN);
         redGlow.setRadius(8);
@@ -112,7 +108,7 @@ public class VuVisualization {
 
     private void drawScale(double x, double meterWidth, double leftY, double rightY) {
         double scaleY = (leftY + rightY) / 2.0;
-        gc.setFont(javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"), 18));
+        gc.setFont(scaleFont);
         gc.setFill(UiColors.getAccent());
         gc.setEffect(UiColors.displayGlow());
         for (int i = 0; i < SCALE_LABELS.length; i++) {
@@ -132,7 +128,6 @@ public class VuVisualization {
         scaleIndex = Math.max(0, Math.min(scaleIndex, SCALE_DB.length - 1));
         int db = SCALE_DB[scaleIndex];
         if (db >= -1) {return redGlow;}
-        if (db >= -12) {return yellowGlow;}
         return greenGlow;
     }
 

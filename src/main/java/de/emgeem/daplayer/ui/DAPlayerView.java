@@ -96,10 +96,10 @@ public class DAPlayerView extends StackPane {
         controlArea.setAlignment(Pos.CENTER);
         controlArea.setPadding(new Insets(CONTROL_TOP_MARGIN, 0, CONTROL_BOTTOM_MARGIN, 0));
 
-        previousButton = new RoundControlButton("PREV");
-        stopButton = new RoundControlButton("STOP");
-        playPauseButton = new RoundControlButton("PLAY/\nPAUSE");
-        nextButton = new RoundControlButton("NEXT");    
+        previousButton = new RoundControlButton("PREV", false);
+        stopButton = new RoundControlButton("STOPPED", true);
+        playPauseButton = new RoundControlButton("PLAY/\nPAUSE", false);
+        nextButton = new RoundControlButton("NEXT", false);    
 
         volumeKnob = new VolumeKnob("VOLUME");
 
@@ -115,29 +115,48 @@ public class DAPlayerView extends StackPane {
         playPauseButton.setTranslateY(+25);
         nextButton.setTranslateY(+25);
 
-playPauseButton.setOnMouseClicked(e -> {
-    if (!controller.isPlaying()) {
-        if (!playlist.getTracks().isEmpty()) {
-            controller.play();
-            playPauseButton.setText("PLAYING");
-            display.showTrackInfo();
-        }
-    } else if (!controller.isPaused()) {
-        controller.pause();
-        playPauseButton.setText("PAUSED");
-    } else {
-        controller.resume();
-        playPauseButton.setText("PLAYING");
-    }
-});
-stopButton.setOnMouseClicked(e -> {
-    controller.stop();
-    playPauseButton.setText("PLAY/\nPAUSE");
-});
-nextButton.setOnMouseClicked(e -> controller.next());
-previousButton.setOnMouseClicked(e -> controller.previous());
-volumeKnob.setVolumeListener(v -> audioEngine.setVolume((float) v));
-volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
+        playPauseButton.setOnMouseClicked(e -> {
+            if (!controller.isPlaying()) {
+                if (!playlist.getTracks().isEmpty()) {
+                    controller.play();
+                    playPauseButton.setText("PLAYING");
+                    playPauseButton.setActive(true);
+                    stopButton.setText("STOP");
+                    stopButton.setActive(false);
+                    display.showTrackInfo();
+                }
+            } else if (!controller.isPaused()) {
+                controller.pause();
+                playPauseButton.setText("PAUSED");
+                playPauseButton.setActive(true);
+                stopButton.setText("STOP");
+                stopButton.setActive(false);
+            } else {
+                controller.resume();
+                playPauseButton.setText("PLAYING");
+                playPauseButton.setActive(true);
+                stopButton.setText("STOP");
+                stopButton.setActive(false);
+            }
+        });
+        stopButton.setOnMouseClicked(e -> {
+            controller.stop();
+            playPauseButton.setText("PLAY/\nPAUSE");
+            playPauseButton.setActive(false);
+            stopButton.setText("STOPPED");
+            stopButton.setActive(true);
+        });
+        nextButton.setOnMouseClicked(e -> controller.next());
+        previousButton.setOnMouseClicked(e -> controller.previous());
+        volumeKnob.setVolumeListener(v -> audioEngine.setVolume((float) v));
+        volumeKnob.setMuteListener(m -> audioEngine.setMuted(m));
+
+        controller.setPlaybackStoppedListener(() -> {
+            playPauseButton.setText("PLAY/\nPAUSE");
+            playPauseButton.setActive(false);
+            stopButton.setText("STOPPED");
+            stopButton.setActive(true);
+        });
 
 
 // MENU BUTTONS

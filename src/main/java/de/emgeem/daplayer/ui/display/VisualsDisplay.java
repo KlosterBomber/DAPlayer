@@ -3,6 +3,7 @@ package de.emgeem.daplayer.ui.display;
 import de.emgeem.daplayer.audio.VisualizationData;
 import de.emgeem.daplayer.audio.VisualizationListener;
 import de.emgeem.daplayer.ui.display.visual.SpectrumVisualization;
+import de.emgeem.daplayer.ui.display.visual.VectorScope;
 import de.emgeem.daplayer.ui.display.visual.VuVisualization;
 import de.emgeem.daplayer.ui.display.visual.WaveformVisualization;
 import de.emgeem.daplayer.ui.painter.UiColors;
@@ -20,6 +21,7 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
     private SpectrumVisualization spectrumVisualization;
     private WaveformVisualization waveformVisualization;
     private VuVisualization vuVisualization;
+    private VectorScope vectorScope;
     private VisualizationData latestData;
     private VisualizationMode currentMode = VisualizationMode.SPECTRUM;
 
@@ -30,6 +32,7 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
         spectrumVisualization = new SpectrumVisualization(canvas.getGraphicsContext2D());
         waveformVisualization = new WaveformVisualization(canvas.getGraphicsContext2D());
         vuVisualization = new VuVisualization(canvas.getGraphicsContext2D());
+        vectorScope = new VectorScope(canvas.getGraphicsContext2D());
         AnimationTimer animationTimer = new AnimationTimer() {
             @Override 
             public void handle(long now) {
@@ -52,6 +55,10 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
                     vuVisualization.setSize(visualWidth, visualHeight);
                     vuVisualization.update(latestData);
                     vuVisualization.draw();
+                } else if (currentMode == VisualizationMode.VECTSCOP) {
+                    vectorScope.setSize(visualWidth, visualHeight);
+                    vectorScope.update(latestData);
+                    vectorScope.draw();
                 }
                 gc.restore();
             }
@@ -67,6 +74,7 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
                 if (x >= 30 && x <= 180) {currentMode = VisualizationMode.SPECTRUM;}
                 else if (x >= 190 && x <= 340) {currentMode = VisualizationMode.WAVEFORM;}
                 else if (x >= 350 && x <= 500) {currentMode = VisualizationMode.VU_METER;}
+                else if (x >= 510 && x <= 660) {currentMode = VisualizationMode.VECTSCOP;}
                 draw();
             }            
         });
@@ -81,7 +89,7 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, w, h);
         // Visualisierungsbereich
-        gc.setFill(Color.rgb(255, 0, 0));
+        gc.setFill(Color.TRANSPARENT);
         gc.fillRect(30, 30, w - 60, 300);
         // Trennlinie
         gc.setStroke(UiColors.accentLight());
@@ -92,6 +100,7 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
         drawButton(gc, 30, 350, 150, 30, "SPECTRUM");
         drawButton(gc, 190, 350, 150, 30, "WAVEFORM");
         drawButton(gc, 350, 350, 150, 30, "VU-METER");
+        drawButton(gc, 510, 350, 150, 30, "VECTOR-SCOPE");
         gc.setEffect(null);
     }
 

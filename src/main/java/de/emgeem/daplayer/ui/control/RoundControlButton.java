@@ -27,9 +27,11 @@ public class RoundControlButton extends Canvas {
 
     private static final Font BUTTON_FONT = Font.loadFont(RoundControlButton.class.getResourceAsStream("/fonts/SairaStencil_Condensed-Black.ttf"), 18);
     private String text;
+    private boolean active;
 
-    public RoundControlButton(String text) {
+    public RoundControlButton(String text, boolean active) {
         this.text = text;
+        this.active = active;
         super.setWidth(OUTER + 12);
         super.setHeight(OUTER + 12);
         hoverProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -38,6 +40,10 @@ public class RoundControlButton extends Canvas {
 
     public void setText(String text) {
         this.text = text;
+        draw();
+    }
+    public void setActive(boolean active) {
+        this.active = active;
         draw();
     }
 
@@ -49,8 +55,6 @@ public class RoundControlButton extends Canvas {
         double cy = getHeight() / 2.0;
 
         gc.clearRect(0, 0, getWidth(), getHeight());
-
-        Color ledColor = UiColors.getAccent();
 
         // ========================================================
         // 1. ÄUSSERE LICHTKANTE
@@ -72,14 +76,13 @@ public class RoundControlButton extends Canvas {
         // 3. LED-RING
         // ========================================================
 
-        // RadialGradient ledSurface = new RadialGradient(0, 0, cx, cy, LED_OUTER / 2, false, CycleMethod.NO_CYCLE, new Stop[] {
-        //     new Stop(0.00, ledColor.deriveColor(0, 1.0, 1.25, 1.0)),
-        //     new Stop(0.55, ledColor.deriveColor(0, 1.0, 1.15, 1.0)),
-        //     new Stop(0.88, ledColor),
-        //     new Stop(1.00, ledColor.deriveColor(0, 1.0, 0.82, 1.0))
-        // });
-        // gc.setFill(UiColors.getAccent());
-        // gc.fillOval(cx - LED_OUTER / 2, cy - LED_OUTER / 2, LED_OUTER, LED_OUTER);
+        if (!active) {gc.setFill(Color.rgb(35, 35, 35));}
+        else {
+            gc.setFill(UiColors.accentLight());
+            gc.setEffect(UiColors.displayGlow());
+        }
+        gc.fillOval(cx - LED_OUTER / 2, cy - LED_OUTER / 2, LED_OUTER, LED_OUTER);
+        gc.setEffect(null);
 
         // ========================================================
         // 4. INNERE AUSSPARUNG DES LED-RINGS
@@ -124,7 +127,7 @@ public class RoundControlButton extends Canvas {
         // BESCHRIFTUNG
         gc.setFont(BUTTON_FONT);
         gc.setTextAlign(TextAlignment.CENTER);
-        if (isHover()) {
+        if (isHover() || active) {
             gc.setEffect(UiColors.displayGlow());
             gc.setFill(UiColors.accentLight());
         } else {

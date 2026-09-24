@@ -2,6 +2,76 @@
 
 All notable changes to the DAPlayer project are documented in this file.
 
+## [0.1.1] - 2026-09-24
+
+Second documented functional development version of DAPlayer.
+
+### Added
+
+#### Equalizer
+
+- 10-band graphic equalizer
+- Frequency bands from 31 Hz to 16 kHz
+- Gain control from -12 dB to +12 dB
+- Real-time equalizer processing
+- Persistent equalizer settings
+- Equalizer display
+
+#### Audio Visualizations
+
+- Visuals display
+- Spectrum visualization
+- Waveform visualization
+- VU-Meter visualization
+- Vectorscope visualization
+- Real-time visualization data
+- Separate left and right channel data
+- Peak and RMS level data for the VU-Meter
+
+#### Playback Control
+
+- Visual playback state indication
+- PLAYING state
+- PAUSED state
+- STOPPED state
+- Automatic stopped state after the end of the playlist
+
+### Changed
+
+#### User Interface
+
+- Added Visuals to the main navigation
+- Added Equalizer to the player display
+- Added active state indication to the playback controls
+- Improved visual feedback for playback states
+
+#### Audio Engine
+
+- Added visualization data processing
+- Added visualization listener support
+- Added left/right channel analysis
+- Added peak level calculation
+- Added RMS level calculation
+
+### Improved
+
+- Separated audio analysis from visualization rendering
+- Visualization rendering is performed on the JavaFX application thread
+- Improved visualization performance and stability
+
+### Technical
+
+- Added `VisualizationData`
+- Added `VisualizationListener`
+- Added `Equalizer`
+- Added `EqualizerSettings`
+- Added `SpectrumVisualization`
+- Added `WaveformVisualization`
+- Added `VuVisualization`
+- Added `VectorScope`
+
+---
+
 ## [0.1.0] - 2026-09-21
 
 First documented functional development version of DAPlayer.

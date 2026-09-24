@@ -9,6 +9,8 @@ public class PlayerController {
     private final AudioEngine engine;
     private final Playlist playlist;
 
+    private Runnable playbackStoppedListener;
+
     public PlayerController(AudioEngine engine, Playlist playlist) {
         this.engine = engine;
         this.playlist = playlist;
@@ -19,6 +21,7 @@ public class PlayerController {
                     play();
                 } else {
                     engine.stop();
+                    if (playbackStoppedListener != null) {playbackStoppedListener.run();}
                 }
             })
         );
@@ -69,5 +72,9 @@ public class PlayerController {
 
     public void seekToMillis(long positionMillis) {
         engine.seekToMillis(positionMillis);
+    }
+
+    public void setPlaybackStoppedListener(Runnable listener) {
+        this.playbackStoppedListener = listener;
     }
 }

@@ -1,127 +1,191 @@
 # DAPlayer
 
-DAPlayer is a JavaFX-based desktop audio player developed by emgeem.
+DAPlayer is a JavaFX-based desktop audio player for playing and managing WAV and MP3 audio files.
 
-The project is currently in active development. Version **0.1.0** represents the first documented functional development stage of the player.
+The project is developed as a native desktop application and is intended to run locally without SaaS dependencies.
+
+## Version
+
+Current version: **0.1.1**
 
 ## Features
 
-### Playback
+### Audio Playback
 
-* WAV playback
-* MP3 playback
-* Play / Pause / Resume
-* Stop
-* Automatic transition to the next track
-* Automatic stop after the last track
-* Volume control
-* Mute
-* Audio output device selection
+- WAV playback
+- MP3 playback
+- Play / Pause / Resume
+- Stop
+- Automatic transition to the next track
+- Automatic stop at the end of the playlist
+- Volume control
+- Mute functionality
+- Audio output device selection
 
-### Playlist and Track Navigation
+### Playlist
 
-* Create and manage a playlist
-* Open individual audio files
-* Open folders containing audio files
-* Select tracks from the playlist
-* Previous / next track navigation
-* Automatic track progression
+- File chooser
+- Folder-based file selection
+- Playlist management
+- Track selection
+- Track navigation
+- Automatic next-track playback
 
 ### Track Information
 
-The Track Info display provides information such as:
+- Track metadata display
+- Album artwork display
+- Track list
+- Track information display
+- Current playback position
+- Total track duration
 
-* Title
-* Artist
-* Album
-* Album Artist
-* Genre
-* Year
-* Track number
-* Disc number
-* Format
-* Duration
+### Playback Progress
 
-Album artwork is displayed when artwork is available.
+- Visual playback progress bar
+- Mouse-based seeking
+- WAV seeking
+- MP3 seeking
 
-### Playback Progress and Seeking
+### Equalizer
 
-DAPlayer provides a playback progress display including:
+DAPlayer includes a real-time 10-band graphic equalizer.
 
-* Current playback position
-* Total track duration
-* Visual playback progress
-* Mouse-based seeking
+Available frequency bands:
 
-Seeking is currently implemented for:
+- 31 Hz
+- 62 Hz
+- 125 Hz
+- 250 Hz
+- 500 Hz
+- 1 kHz
+- 2 kHz
+- 4 kHz
+- 8 kHz
+- 16 kHz
 
-* WAV
-* MP3
+Gain range:
+
+- -12 dB to +12 dB
+
+Equalizer settings are stored persistently using Java Preferences.
+
+### Audio Visualizations
+
+DAPlayer includes a dedicated Visuals display with four visualization modes:
+
+- Spectrum
+- Waveform
+- VU-Meter
+- Vectorscope
+
+The visualization system receives real-time audio data from the audio engine.
+
+The VU-Meter uses separate left and right channel peak and RMS values.
+
+The Vectorscope uses separate left and right channel sample data for stereo visualization.
 
 ### User Interface
 
-The player uses a custom JavaFX interface with separate display areas for:
+The player uses a custom JavaFX interface with:
 
-* Start screen
-* Track list
-* Track information
-* Settings
+- Custom player background
+- Custom volume knob
+- Playback control buttons
+- Menu buttons
+- Off and navigation buttons
+- Start display
+- Track list display
+- Track information display
+- Settings display
+- Equalizer display
+- Visuals display
+- Custom accent colors
+- Playback state indication
 
-The interface also contains custom controls for playback, volume and navigation.
+The playback controls provide visual feedback for:
 
-### Settings
+- PLAYING
+- PAUSED
+- STOPPED
 
-The current settings area provides:
+## Settings
 
-* Audio device selection
-* Accent color configuration
+### Audio Device
+
+DAPlayer allows the user to select the audio output device.
+
+### Accent Colors
+
+The accent color can be changed through the Settings display.
+
+The selected accent color is stored persistently.
+
+### Equalizer
+
+Equalizer settings are stored persistently and restored when DAPlayer is started again.
 
 ## Supported Audio Formats
 
-Currently implemented:
+Currently supported:
 
-* WAV
-* MP3
+- WAV
+- MP3
 
-Additional formats may be added during future development.
+## Technologies
 
-## Technology
+DAPlayer is built using:
 
-DAPlayer is currently built with:
-
-* Java 21
-* JavaFX 24.0.2
-* Maven
-* JAudioTagger 3.0.1
-* JLayer 1.0.1
+- Java 21
+- JavaFX 24.0.2
+- Maven
+- JAudioTagger 3.0.1
+- JLayer 1.0.1
 
 ## Project Structure
 
 ```text
-src/main/java/de/emgeem/daplayer/
-│
-├── audio/
-│   ├── AudioDeviceManager
-│   ├── AudioEngine
-│   └── PlayerController
-│
-├── decoder/
-│   ├── AudioDecoder
-│   ├── DecoderManager
-│   ├── Mp3Decoder
-│   └── WavDecoder
-│
-├── model/
-│   ├── Playlist
-│   └── Track
-│
-└── ui/
-    ├── DAPlayerView
-    │
-    ├── background/
-    ├── control/
-    ├── display/
-    └── painter/
+src/
+└── main/
+    └── java/
+        └── de/
+            └── emgeem/
+                └── daplayer/
+                    ├── audio/
+                    │   ├── AudioDeviceManager
+                    │   ├── AudioEngine
+                    │   ├── DecoderManager
+                    │   ├── Equalizer
+                    │   ├── EqualizerSettings
+                    │   ├── PlayerController
+                    │   ├── VisualizationData
+                    │   └── VisualizationListener
+                    │
+                    ├── decoder/
+                    │   ├── AudioDecoder
+                    │   ├── Mp3Decoder
+                    │   └── WavDecoder
+                    │
+                    ├── model/
+                    │   ├── Playlist
+                    │   └── Track
+                    │
+                    └── ui/
+                        ├── DAPlayerView
+                        ├── PlayerDisplay
+                        ├── PlayerPanel
+                        └── display/
+                            ├── StartDisplay
+                            ├── TrackListDisplay
+                            ├── TrackInfoDisplay
+                            ├── SettingsDisplay
+                            ├── EqualizerDisplay
+                            ├── VisualsDisplay
+                            └── visual/
+                                ├── SpectrumVisualization
+                                ├── WaveformVisualization
+                                ├── VuVisualization
+                                └── VectorScope
 ```
 
 Resources such as fonts and application icons are located under:
@@ -167,7 +231,31 @@ mvn javafx:run
 
 ## Current Development Status
 
-Version **0.1.0** provides the basic foundation of the DAPlayer, including a functional user interface, playlist handling, WAV and MP3 playback, playback controls, progress display and seeking.
+Version **0.1.1** currently provides:
+
+WAV playback,
+MP3 playback,
+Playlist handling,
+Track navigation,
+Automatic next-track playback,
+Automatic playlist stop,
+Volume control,
+Mute functionality,
+Audio device selection,
+Track information,
+Album artwork,
+Playback progress,
+WAV seeking,
+MP3 seeking,
+Audio equalizer,
+Persistent equalizer settings,
+Spectrum visualization,
+Waveform visualization,
+VU-Meter visualization,
+Vectorscope visualization,
+Audio device settings,
+Accent color settings,
+Playback state indication.
 
 The project is still under active development. Architecture, user interface and playback functionality may change in future versions.
 
