@@ -18,6 +18,7 @@ import javafx.scene.text.Font;
 public class PlayerDisplay extends StackPane {
 
     private final Font displayFont;
+    private final Font displayFontSmall;
     private final Canvas backgroundCanvas;
     private final StartDisplay startDisplay;
     private final TrackListDisplay trackListDisplay;
@@ -39,6 +40,7 @@ public class PlayerDisplay extends StackPane {
         backgroundCanvas = new Canvas();
         getChildren().add(backgroundCanvas);
         displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),18);
+        displayFontSmall = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),14);
         
         startDisplay = new StartDisplay();
         startDisplay.prefWidthProperty().bind(widthProperty());
@@ -53,7 +55,7 @@ public class PlayerDisplay extends StackPane {
         trackInfoDisplay.prefWidthProperty().bind(widthProperty());
         trackInfoDisplay.prefHeightProperty().bind(heightProperty());
 
-        settingsDisplay = new SettingsDisplay(displayFont, audioDeviceManager, this::redraw);
+        settingsDisplay = new SettingsDisplay(displayFont, displayFontSmall, audioDeviceManager, this::redraw);
         settingsDisplay.prefWidthProperty().bind(widthProperty());
         settingsDisplay.prefHeightProperty().bind(heightProperty());
 
@@ -191,6 +193,8 @@ public class PlayerDisplay extends StackPane {
     public void updatePlaybackProgress(long position, long duration) {
         trackInfoDisplay.setPlaybackProgress(position, duration);
     }
+
+    public void updateCurrentTrack() {trackListDisplay.updateCurrentTrack();}
 
     public VisualizationListener getVisualizationListener() {return visualsDisplay;}
 }

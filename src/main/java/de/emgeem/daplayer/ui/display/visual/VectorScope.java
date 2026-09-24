@@ -34,32 +34,33 @@ public class VectorScope {
         if (sampleCount == 0) {return;}
         double centerX = width / 2.0;
         double centerY = height / 2.0;
-        double scale = Math.min(width, height) * 0.45;
-        drawBackground(centerX, centerY, scale);
-        drawTrace(centerX, centerY, scale, sampleCount);
+        double scaleX = width * 0.45;
+        double scaleY = height * 0.45;
+    //    drawBackground(centerX, centerY, scaleX, scaleY);
+        drawTrace(centerX, centerY, scaleX, scaleY, sampleCount);
     }
 
-    private void drawBackground(double centerX, double centerY, double scale) {
+    private void drawBackground(double centerX, double centerY, double scaleX, double scaleY) {
         gc.setStroke(UiColors.getAccent());
         gc.setLineWidth(1.0);
         gc.setGlobalAlpha(0.18);
         // Horizontal
-        gc.strokeLine(centerX - scale, centerY, centerX + scale, centerY);
+        gc.strokeLine(centerX - scaleX, centerY, centerX + scaleX, centerY);
         // Vertikal
-        gc.strokeLine(centerX, centerY - scale, centerX, centerY + scale);
+        gc.strokeLine(centerX, centerY - scaleY, centerX, centerY + scaleY);
         // Diagonale
-        gc.strokeLine(centerX - scale, centerY - scale, centerX + scale, centerY + scale);
-        gc.strokeLine(centerX - scale, centerY + scale, centerX + scale, centerY - scale);
+        gc.strokeLine(centerX - scaleX, centerY - scaleY, centerX + scaleX, centerY + scaleY);
+        gc.strokeLine(centerX - scaleX, centerY + scaleY, centerX + scaleX, centerY - scaleY);
         // Begrenzung
-        gc.strokeRect(centerX - scale, centerY - scale, scale * 2, scale * 2);
+        gc.strokeRect(centerX - scaleX, centerY - scaleY, scaleX * 2, scaleY * 2);
         gc.setGlobalAlpha(1.0);
     }
 
-    private void drawTrace(double centerX, double centerY, double scale, int sampleCount) {
+    private void drawTrace(double centerX, double centerY, double scaleX, double scaleY, int sampleCount) {
         gc.setGlobalAlpha(0.08);
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, width, height);
-        gc.setFill(UiColors.getAccent());
+        if (UiColors.isRgbVisualization()) {gc.setFill(UiColors.accentRGB());} else {gc.setFill(UiColors.getAccent());}
         gc.setGlobalAlpha(0.35);
         int step = Math.max(1, sampleCount / 600);
         for (int i = 0; i < sampleCount; i += step) {
@@ -67,9 +68,9 @@ public class VectorScope {
             double right = rightSamples[i];
             double mid = (left + right) * 0.5;
             double side = (left - right) * 0.5;
-            double x = centerX + mid * scale;
-            double y = centerY - side * scale;
-            gc.fillOval(x - 1, y - 1, 2, 2);
+            double x = centerX + mid * scaleX;
+            double y = centerY - side * scaleY;
+            gc.fillOval(x - 1.5, y - 1.5, 3, 3);
         }
         gc.setGlobalAlpha(1.0);
     }

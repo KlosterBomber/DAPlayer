@@ -26,7 +26,7 @@ public class WaveformVisualization {
         if (samples == null || samples.length == 0) {return;}
         double centerY = height / 2.0;
         double amplitude = height * 0.45;
-        gc.setStroke(UiColors.getAccent());
+        if (UiColors.isRgbVisualization()) {gc.setStroke(UiColors.accentRGB());} else {gc.setStroke(UiColors.getAccent());}
         gc.setLineWidth(1.0);
         gc.beginPath();
         for (int x = 0; x < width; x++) {

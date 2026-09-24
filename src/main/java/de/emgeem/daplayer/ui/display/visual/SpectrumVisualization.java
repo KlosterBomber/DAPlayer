@@ -40,7 +40,7 @@ public class SpectrumVisualization {
         fft(real, imag);
         int binCount = fftSize / 2;
         double barWidth = width / binCount;
-        gc.setFill(UiColors.getAccent());
+        if (UiColors.isRgbVisualization()) {gc.setFill(UiColors.accentRGB());} else {gc.setFill(UiColors.getAccent());}
         for (int i = 1; i < binCount; i++) {
             double magnitude = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
             double level = magnitude / fftSize;

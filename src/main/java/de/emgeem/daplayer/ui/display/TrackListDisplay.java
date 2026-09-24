@@ -155,6 +155,7 @@ public class TrackListDisplay extends DisplayMode {
         scrollPosition = 0;
         draw();
     }
+    public void updateCurrentTrack() {draw();}
 
     public void setScrollOffset(double offset) {
         scrollOffset = Math.max(0, offset);

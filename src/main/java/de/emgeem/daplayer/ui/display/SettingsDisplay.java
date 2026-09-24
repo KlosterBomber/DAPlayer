@@ -10,13 +10,15 @@ import javafx.scene.text.Font;
 public class SettingsDisplay extends DisplayMode {
 
     private final Font displayFont;
+    private final Font displayFontSmall;
     private final Canvas canvas;
     private final AudioDeviceManager audioDeviceManager;
     private final AudioDeviceSettings audioDeviceSettings;
     private final AccentColorSettings accentColorSettings;
 
-    public SettingsDisplay(Font displayFont, AudioDeviceManager audioDeviceManager, Runnable redrawAction) {
+    public SettingsDisplay(Font displayFont, Font displayFontSmall, AudioDeviceManager audioDeviceManager, Runnable redrawAction) {
         this.displayFont = displayFont;
+        this.displayFontSmall = displayFontSmall;
         this.audioDeviceManager = audioDeviceManager;
         canvas = new Canvas();
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -24,7 +26,7 @@ public class SettingsDisplay extends DisplayMode {
         audioDeviceSettings = new AudioDeviceSettings(displayFont, audioDeviceManager);        
         audioDeviceSettings.prefWidthProperty().bind(widthProperty());
         audioDeviceSettings.prefHeightProperty().bind(heightProperty());
-        accentColorSettings = new AccentColorSettings(displayFont, redrawAction);
+        accentColorSettings = new AccentColorSettings(displayFont, displayFontSmall, redrawAction);
         getChildren().addAll(canvas, audioDeviceSettings, accentColorSettings);
         audioDeviceSettings.setVisible(false);
         accentColorSettings.setVisible(false);

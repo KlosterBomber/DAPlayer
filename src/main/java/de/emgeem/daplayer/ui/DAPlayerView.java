@@ -157,6 +157,7 @@ public class DAPlayerView extends StackPane {
             stopButton.setText("STOPPED");
             stopButton.setActive(true);
         });
+        controller.setTrackChangedListener(display::updateCurrentTrack);
 
 
 // MENU BUTTONS

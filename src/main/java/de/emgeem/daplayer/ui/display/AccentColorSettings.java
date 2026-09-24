@@ -10,19 +10,22 @@ import javafx.scene.text.Font;
 public class AccentColorSettings extends StackPane {
 
     private final Font displayFont;
+    private final Font displayFontSmall;
     private final Canvas canvas;
     private final Runnable redrawAction;
 
     private int red;
     private int green;
     private int blue;
-
     private int activeChannel = -1;
+    private boolean rgbMode;
 
-    public AccentColorSettings(Font displayFont, Runnable redrawAction) {
+    public AccentColorSettings(Font displayFont, Font displayFontSmall, Runnable redrawAction) {
         this.displayFont = displayFont;
+        this.displayFontSmall = displayFontSmall;
         this.redrawAction = redrawAction;
         Color accent = UiColors.getAccent();
+        rgbMode = UiColors.isRgbVisualization();
         red = (int) Math.round(accent.getRed() * 255);        
         green = (int) Math.round(accent.getGreen() * 255);    
         blue = (int) Math.round(accent.getBlue() * 255);        
@@ -40,6 +43,13 @@ public class AccentColorSettings extends StackPane {
         });
         setOnMouseReleased(e -> activeChannel = -1);
         setOnMouseClicked(e -> {
+            if (e.getX() >= 280 && e.getX() <= 340 && e.getY() >= 250 && e.getY() <= 274) {
+                rgbMode = !rgbMode;
+                UiColors.setRgbVisualization(rgbMode);
+                draw();
+                redrawAction.run();
+                return;
+            }
             if (e.getX() >= 800 && e.getX() <= 910 && e.getY() >= 210 && e.getY() <= 240) {
                 UiColors.setAccent(Color.rgb(red, green, blue));
                 redrawAction.run();
@@ -62,6 +72,7 @@ public class AccentColorSettings extends StackPane {
         drawSlider(gc, 30, 135, 700, "GREEN", green);
         drawSlider(gc, 30, 190, 700, "BLUE", blue);
         drawApplyButton(gc);
+        drawRgbToggle(gc);
         gc.setEffect(null);
         drawPreview(gc);
     }
@@ -136,5 +147,40 @@ public class AccentColorSettings extends StackPane {
         gc.setFont(displayFont);
         double textWidth = gc.getFont().getSize() * 10 * 0.6;
         gc.fillText("ÜBERNEHMEN", x + (width - textWidth) / 2, y + 21);
+    }
+
+    private void drawRgbToggle(GraphicsContext gc) {
+        double labelX = 30;
+        double labelY = 269;
+        double toggleX = 280;
+        double toggleY = 250;
+        double toggleWidth = 60;
+        double toggleHeight = 24;
+        gc.setFont(displayFont);
+        gc.setFill(UiColors.accentLight());
+        gc.setEffect(UiColors.displayGlow());
+        gc.fillText("VISUALS COLOR RGB-MODE", labelX, labelY);
+        gc.setFont(displayFontSmall);
+        gc.fillText("OFF", 280, 288);
+        gc.fillText("ON", 323, 288);
+        gc.setEffect(null);
+        // Toggle Hintergrund
+        gc.setFill(Color.rgb(25, 25, 25));
+        gc.fillRoundRect(toggleX, toggleY, toggleWidth, toggleHeight, 12, 12);
+        // Toggle Rahmen
+        gc.setStroke(UiColors.accentLight());
+        gc.setLineWidth(1);
+        gc.strokeRoundRect(toggleX, toggleY, toggleWidth, toggleHeight, 12, 12);
+        // Status
+        if (rgbMode) {
+            gc.setFill(UiColors.accentLight());
+            gc.setEffect(UiColors.displayGlow());
+            gc.fillOval(toggleX + toggleWidth - 20, toggleY + 4, 16, 16);
+        } else {
+            gc.setFill(UiColors.accentLight());
+            gc.setEffect(UiColors.displayGlow());
+            gc.fillOval(toggleX + 4, toggleY + 4, 16, 16);
+        }
+        gc.setEffect(null);
     }
 }

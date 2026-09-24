@@ -10,6 +10,7 @@ public class PlayerController {
     private final Playlist playlist;
 
     private Runnable playbackStoppedListener;
+    private Runnable trackChangedListener;
 
     public PlayerController(AudioEngine engine, Playlist playlist) {
         this.engine = engine;
@@ -18,6 +19,7 @@ public class PlayerController {
             Platform.runLater(() -> {
                 if (playlist.hasNextTrack()) {
                     playlist.nextTrack();
+                    notifyTrackChanged();
                     play();
                 } else {
                     engine.stop();
@@ -46,12 +48,17 @@ public class PlayerController {
     }
 
     public void next() {
-        if (playlist.nextTrack()) {play();}
-        else {engine.stop();}
+        if (playlist.nextTrack()) {
+            notifyTrackChanged();
+            play();
+        } else {engine.stop();}
     }
 
     public void previous() {
-        if (playlist.previousTrack()) {play();}
+        if (playlist.previousTrack()) {
+            notifyTrackChanged();
+            play();
+        }
     }
 
     public boolean isPlaying() {
@@ -76,5 +83,15 @@ public class PlayerController {
 
     public void setPlaybackStoppedListener(Runnable listener) {
         this.playbackStoppedListener = listener;
+    }
+
+    public void setTrackChangedListener(Runnable listener) {
+        this.trackChangedListener = listener;
+    }
+
+    private void notifyTrackChanged() {
+        if (trackChangedListener != null) {
+            trackChangedListener.run();
+        }
     }
 }
