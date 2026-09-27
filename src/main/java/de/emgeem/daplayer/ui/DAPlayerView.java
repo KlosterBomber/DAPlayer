@@ -15,6 +15,7 @@ import de.emgeem.daplayer.ui.background.PlayerPanel;
 import de.emgeem.daplayer.ui.background.PlayerViewBackground;
 import de.emgeem.daplayer.ui.control.MenuButton;
 import de.emgeem.daplayer.ui.control.OffButton;
+import de.emgeem.daplayer.ui.control.PlayModeButton;
 import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.VolumeKnob;
 import de.emgeem.daplayer.ui.display.PlayerDisplay;
@@ -58,6 +59,8 @@ public class DAPlayerView extends StackPane {
     private final AudioEngine audioEngine;
     private final PlayerController controller;
     private final Equalizer equalizer;
+    private final PlayModeButton shuffleButton;
+    private final PlayModeButton repeatButton;
 
     private double dragX;
     private double dragY;
@@ -106,7 +109,7 @@ public class DAPlayerView extends StackPane {
         HBox controlRow = new HBox();
         controlRow.setAlignment(Pos.CENTER);
         controlRow.setSpacing(CONTROL_SPACING);
-        controlRow.getChildren().addAll(previousButton, stopButton, volumeKnob, playPauseButton, nextButton);
+        controlRow.getChildren().addAll(previousButton, nextButton, volumeKnob, stopButton, playPauseButton);
 
         controlArea.getChildren().add(controlRow);
         previousButton.setTranslateY(+25);
@@ -203,6 +206,24 @@ public class DAPlayerView extends StackPane {
         offButton.setTranslateX(20);
         offButton.setTranslateY(585);
 
+        shuffleButton = new PlayModeButton("SHF", false);
+        shuffleButton.setOnMouseClicked(e -> {
+            controller.setShuffle(!controller.isShuffle());
+            shuffleButton.setActive(controller.isShuffle());
+        });
+        StackPane.setAlignment(shuffleButton, Pos.TOP_RIGHT);
+        shuffleButton.setTranslateX(-65);
+        shuffleButton.setTranslateY(569);
+
+        repeatButton = new PlayModeButton("RPT", false);
+        repeatButton.setOnMouseClicked(e -> {
+            controller.setRepeat(!controller.isRepeat());
+            repeatButton.setActive(controller.isRepeat());
+        });
+        StackPane.setAlignment(repeatButton, Pos.TOP_RIGHT);
+        repeatButton.setTranslateX(-65);
+        repeatButton.setTranslateY(495);
+
         moveButton = new MenuButton("MOVE", 70, 30, MenuButton.Shape.BOTH);
         moveButton.setOnMousePressed(e -> {
             dragX = e.getScreenX() - getScene().getWindow().getX();
@@ -233,6 +254,8 @@ public class DAPlayerView extends StackPane {
                 eqButton,
 
                 offButton,
+                shuffleButton,
+                repeatButton,
                 moveButton
         );
         
@@ -302,6 +325,8 @@ public class DAPlayerView extends StackPane {
         nextButton.draw();
         volumeKnob.draw();
         offButton.draw();
+        shuffleButton.draw();
+        repeatButton.draw();
         playlistButton.draw();
         trackinfoButton.draw();
         settingsButton.draw();
