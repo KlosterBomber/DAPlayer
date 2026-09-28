@@ -2,6 +2,47 @@
 
 All notable changes to the DAPlayer project are documented in this file.
 
+## [0.2.0] - 2026-09-28
+
+WMA support and continued playback and visualization improvements.
+
+### Added
+
+#### WMA Support
+
+- WMA audio file support
+- WMA playback using FFmpeg via JavaCPP
+- WMA metadata reading
+- WMA track duration
+- WMA seeking
+- WMA automatic track transition
+- WMA pause and resume
+- WMA PCM decoding
+
+#### Playback Modes
+
+- Shuffle playback mode
+- Repeat playback mode
+
+#### Audio Visualizations
+
+- RGB visualization mode
+
+### Technical
+
+- Added FFmpeg JavaCPP platform dependency
+- Added `WmaDecoder`
+- WMA audio is decoded from planar floating-point samples to 16-bit PCM
+- FFmpeg logging configured to show errors only
+
+### Improved
+
+- Audio decoder architecture now supports WAV, MP3 and WMA
+- Visualization system supports RGB mode
+- Playback engine supports shuffle and repeat modes
+
+---
+
 ## [0.1.1] - 2026-09-24
 
 Second documented functional development version of DAPlayer.
@@ -181,5 +222,5 @@ MAJOR.MINOR.PATCH
 The project is currently at:
 
 ```text
-0.1.0
+0.2.0
 ```

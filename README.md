@@ -1,12 +1,14 @@
 # DAPlayer
 
-DAPlayer is a JavaFX-based desktop audio player for playing and managing WAV and MP3 audio files.
+DAPlayer is a JavaFX-based desktop audio player for playing and managing
+WAV, MP3 and WMA audio files.
 
-The project is developed as a native desktop application and is intended to run locally without SaaS dependencies.
+The project is developed as a native desktop application and is intended
+to run locally without SaaS dependencies.
 
 ## Version
 
-Current version: **0.1.1**
+Current version: **0.2.0**
 
 ## Features
 
@@ -14,6 +16,7 @@ Current version: **0.1.1**
 
 - WAV playback
 - MP3 playback
+- WMA playback
 - Play / Pause / Resume
 - Stop
 - Automatic transition to the next track
@@ -21,6 +24,8 @@ Current version: **0.1.1**
 - Volume control
 - Mute functionality
 - Audio output device selection
+- Shuffle playback mode
+- Repeat playback mode
 
 ### Playlist
 
@@ -30,6 +35,8 @@ Current version: **0.1.1**
 - Track selection
 - Track navigation
 - Automatic next-track playback
+- Shuffle playback
+- Repeat playback
 
 ### Track Information
 
@@ -46,6 +53,7 @@ Current version: **0.1.1**
 - Mouse-based seeking
 - WAV seeking
 - MP3 seeking
+- WMA seeking
 
 ### Equalizer
 
@@ -83,7 +91,10 @@ The visualization system receives real-time audio data from the audio engine.
 
 The VU-Meter uses separate left and right channel peak and RMS values.
 
-The Vectorscope uses separate left and right channel sample data for stereo visualization.
+The Vectorscope uses separate left and right channel sample data for
+stereo visualization.
+
+DAPlayer also supports an RGB visualization mode.
 
 ### User Interface
 
@@ -123,7 +134,8 @@ The selected accent color is stored persistently.
 
 ### Equalizer
 
-Equalizer settings are stored persistently and restored when DAPlayer is started again.
+Equalizer settings are stored persistently and restored when DAPlayer
+is started again.
 
 ## Supported Audio Formats
 
@@ -131,6 +143,21 @@ Currently supported:
 
 - WAV
 - MP3
+- WMA
+
+### WMA
+
+WMA playback is implemented using FFmpeg through JavaCPP.
+
+Supported WMA functionality includes:
+
+- Audio decoding
+- Metadata reading
+- Track duration
+- Playback
+- Seeking
+- Pause / Resume
+- Automatic track transition
 
 ## Technologies
 
@@ -141,6 +168,7 @@ DAPlayer is built using:
 - Maven
 - JAudioTagger 3.0.1
 - JLayer 1.0.1
+- FFmpeg 8.1.2 via JavaCPP
 
 ## Project Structure
 
@@ -164,7 +192,8 @@ src/
                     ├── decoder/
                     │   ├── AudioDecoder
                     │   ├── Mp3Decoder
-                    │   └── WavDecoder
+                    │   ├── WavDecoder
+                    │   └── WmaDecoder
                     │
                     ├── model/
                     │   ├── Playlist
@@ -231,34 +260,44 @@ mvn javafx:run
 
 ## Current Development Status
 
-Version **0.1.1** currently provides:
+Version **0.2.0** currently provides:
 
-WAV playback,
-MP3 playback,
-Playlist handling,
-Track navigation,
-Automatic next-track playback,
-Automatic playlist stop,
-Volume control,
-Mute functionality,
-Audio device selection,
-Track information,
-Album artwork,
-Playback progress,
-WAV seeking,
-MP3 seeking,
-Audio equalizer,
-Persistent equalizer settings,
-Spectrum visualization,
-Waveform visualization,
-VU-Meter visualization,
-Vectorscope visualization,
-Audio device settings,
-Accent color settings,
-Playback state indication.
+- WAV playback
+- MP3 playback
+- WMA playback
+- Playlist handling
+- Track navigation
+- Automatic next-track playback
+- Automatic playlist stop
+- Shuffle playback
+- Repeat playback
+- Volume control
+- Mute functionality
+- Audio device selection
+- Track information
+- Album artwork
+- Playback progress
+- WAV seeking
+- MP3 seeking
+- WMA seeking
+- Audio equalizer
+- Persistent equalizer settings
+- Spectrum visualization
+- Waveform visualization
+- VU-Meter visualization
+- Vectorscope visualization
+- RGB visualization mode
+- Audio device settings
+- Accent color settings
+- Playback state indication
 
 The project is still under active development. Architecture, user interface and playback functionality may change in future versions.
 
 ## Planned Development
 
-Possible future development includes additional audio formats and further expansion of the player functionality and user interface.
+Possible future development includes:
+
+- Additional audio formats
+- Music library functionality
+- Further expansion of the player functionality
+- Further expansion of the user interface

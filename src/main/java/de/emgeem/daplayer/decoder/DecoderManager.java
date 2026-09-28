@@ -13,6 +13,7 @@ public class DecoderManager {
     public DecoderManager() {
         decoders.add(new WavDecoder());
         decoders.add(new Mp3Decoder());
+        decoders.add(new WmaDecoder());
     }
 
     public Track readTrack(File file) {
@@ -20,25 +21,21 @@ public class DecoderManager {
         return new Track(file);
     }
 
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-public AudioDecoder getDecoder(File file) {
-    for (AudioDecoder decoder : decoders) {
-        if (decoder.supports(file)) {
-            return decoder;
+    public AudioDecoder getDecoder(File file) {
+        for (AudioDecoder decoder : decoders) {
+            if (decoder.supports(file)) {
+                return decoder;
+            }
         }
+        return null;
     }
-    return null;
-}
 
-public AudioDecoder openDecoder(File file) throws Exception {
-    AudioDecoder decoder = getDecoder(file);
-    if (decoder == null) {
-        throw new IllegalArgumentException("Kein Decoder für Datei: " + file.getName());
+    public AudioDecoder openDecoder(File file) throws Exception {
+        AudioDecoder decoder = getDecoder(file);
+        if (decoder == null) {
+            throw new IllegalArgumentException("Kein Decoder für Datei: " + file.getName());
+        }
+        decoder.open(file);
+        return decoder;
     }
-    decoder.open(file);
-    return decoder;
-}
 }
