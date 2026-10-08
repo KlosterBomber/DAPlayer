@@ -32,7 +32,7 @@ public class PlayerDisplay extends StackPane {
     private DisplayMode currentDisplay;
 
     public PlayerDisplay(double width, double height, Runnable addFileAction, Runnable addFolderAction, AudioDeviceManager audioDeviceManager, Equalizer equalizer,
-                         Runnable redrawUiAction, LongConsumer seekAction, Consumer<String> activeDisplayAction) {
+                         Runnable redrawUiAction, LongConsumer seekAction, Consumer<String> activeDisplayAction, Runnable savePlaylistAction, Runnable loadPlaylistAction) {
         this.redrawUiAction = redrawUiAction;
         this.activeDisplayAction = activeDisplayAction;
         setPrefSize(width, height);
@@ -46,7 +46,7 @@ public class PlayerDisplay extends StackPane {
         startDisplay.prefWidthProperty().bind(widthProperty());
         startDisplay.prefHeightProperty().bind(heightProperty());
 
-        trackListDisplay = new TrackListDisplay(displayFont, addFileAction, addFolderAction);
+        trackListDisplay = new TrackListDisplay(displayFont, addFileAction, addFolderAction, savePlaylistAction, loadPlaylistAction);
         trackListDisplay.prefWidthProperty().bind(widthProperty());
         trackListDisplay.prefHeightProperty().bind(heightProperty());
 

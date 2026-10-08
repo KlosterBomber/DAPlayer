@@ -14,6 +14,8 @@ public class TrackListDisplay extends DisplayMode {
     private final Font displayFont;
     private final Runnable addFileAction;
     private final Runnable addFolderAction;
+    private final Runnable savePlaylistAction;
+    private final Runnable loadPlaylistAction;
 
     private double scrollOffset = 0;
     private double scrollPosition = 0;
@@ -23,10 +25,12 @@ public class TrackListDisplay extends DisplayMode {
     private double dragStartY;
     private double DragStartPosition;
 
-    public TrackListDisplay(Font displayFont, Runnable addFileAction, Runnable addFolderAction) {
+    public TrackListDisplay(Font displayFont, Runnable addFileAction, Runnable addFolderAction, Runnable savePlaylistAction, Runnable loadPlaylistAction) {
         this.displayFont = displayFont;
         this.addFileAction = addFileAction;
         this.addFolderAction = addFolderAction;
+        this.savePlaylistAction = savePlaylistAction;
+        this.loadPlaylistAction = loadPlaylistAction;
         canvas = new Canvas();
         getChildren().add(canvas);
         
@@ -48,6 +52,8 @@ public class TrackListDisplay extends DisplayMode {
                 else if (x >= 180 && x < 280) {pressedButton = 1;} 
                 else if (x >= 320 && x < 420) {pressedButton = 2;} 
                 else if (x >= 460 && x < 560) {pressedButton = 3;}
+                else if (x >= 818 && x < 968) {pressedButton = 4;}
+                else if (x >= 978 && x < 1128) {pressedButton = 5;}
                 draw();
             }
             if (playlist != null && y >= 60 && y < 340) {
@@ -84,6 +90,8 @@ public class TrackListDisplay extends DisplayMode {
                 scrollPosition = 0;
                 draw();
             }
+            if (button == 4 && savePlaylistAction != null) {savePlaylistAction.run();}
+            if (button == 5 && loadPlaylistAction != null) {loadPlaylistAction.run();}
         });
 
         canvas.setOnScroll(e -> {
@@ -120,6 +128,8 @@ public class TrackListDisplay extends DisplayMode {
         drawButton(gc, 180, 350, 140, 30, "ADD FOLDER", 1);
         drawButton(gc, 330, 350, 140, 30, "ADD LOCATION", 2);
         drawButton(gc, 480, 350, 140, 30, "CLEAR", 3);
+        drawButton(gc, 818, 350, 150, 30, "SAVE PLAYLIST", 4);
+        drawButton(gc, 978, 350, 150, 30, "LOAD PLAYLIST", 5);
         gc.save();
         gc.beginPath();
         gc.rect(20, 60, w - 40, 280);

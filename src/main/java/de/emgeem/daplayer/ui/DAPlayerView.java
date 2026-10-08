@@ -1,6 +1,7 @@
 package de.emgeem.daplayer.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import de.emgeem.daplayer.audio.AudioDeviceManager;
@@ -11,6 +12,7 @@ import de.emgeem.daplayer.audio.PlayerController;
 import de.emgeem.daplayer.decoder.DecoderManager;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
+import de.emgeem.daplayer.playlist.PlaylistManager;
 import de.emgeem.daplayer.ui.background.PlayerPanel;
 import de.emgeem.daplayer.ui.background.PlayerViewBackground;
 import de.emgeem.daplayer.ui.control.MenuButton;
@@ -19,6 +21,7 @@ import de.emgeem.daplayer.ui.control.PlayModeButton;
 import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.VolumeKnob;
 import de.emgeem.daplayer.ui.display.PlayerDisplay;
+
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -41,6 +44,7 @@ public class DAPlayerView extends StackPane {
     private final DecoderManager decoderManager = new DecoderManager();
     private final PlayerDisplay display;
     private final AudioDeviceManager audioDeviceManager = new AudioDeviceManager();
+    private final PlaylistManager playlistManager = new PlaylistManager();
 
     private final PlayerPanel playerPanel;
     private final RoundControlButton previousButton;
@@ -51,8 +55,8 @@ public class DAPlayerView extends StackPane {
     private final OffButton offButton;
     private final MenuButton playlistButton;
     private final MenuButton trackinfoButton;
-    private final MenuButton settingsButton;
     private final MenuButton reserveButton;
+    private final MenuButton settingsButton;
     private final MenuButton visualsButton;
     private final MenuButton eqButton;
     private final MenuButton moveButton;
@@ -87,7 +91,7 @@ public class DAPlayerView extends StackPane {
         displayArea.setPadding(new Insets(DISPLAY_TOP_MARGIN, DISPLAY_SIDE_MARGIN, 0, DISPLAY_SIDE_MARGIN));
 
         display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, equalizer, this::redrawUi, controller::seekToMillis,
-                                    this::setActiveDisplay);
+                                    this::setActiveDisplay, this::savePlaylist, this::loadPlaylist);
         display.setPlaylist(playlist);
         audioEngine.setVisualizationListener(display.getVisualizationListener());
         displayArea.getChildren().add(display);
@@ -177,16 +181,16 @@ public class DAPlayerView extends StackPane {
         trackinfoButton.setTranslateX(175);
         trackinfoButton.setTranslateY(425);
 
-        settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.RIGHT);
-        settingsButton.setOnMouseClicked(e -> display.showSettings());
-        StackPane.setAlignment(settingsButton, Pos.TOP_LEFT);
-        settingsButton.setTranslateX(325);
-        settingsButton.setTranslateY(425);
-
-        reserveButton = new MenuButton("RESERVE", 150, 40, MenuButton.Shape.LEFT);
-        StackPane.setAlignment(reserveButton, Pos.TOP_RIGHT);
-        reserveButton.setTranslateX(-325);
+        reserveButton = new MenuButton("RESERVE", 150, 40, MenuButton.Shape.RIGHT);
+        StackPane.setAlignment(reserveButton, Pos.TOP_LEFT);
+        reserveButton.setTranslateX(325);
         reserveButton.setTranslateY(425);
+
+        settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.LEFT);
+        settingsButton.setOnMouseClicked(e -> display.showSettings());
+        StackPane.setAlignment(settingsButton, Pos.TOP_RIGHT);
+        settingsButton.setTranslateX(-325);
+        settingsButton.setTranslateY(425);
 
         visualsButton = new MenuButton("VISUALS", 150, 40, MenuButton.Shape.CENTER);
         visualsButton.setOnMouseClicked(e -> display.showVisuals());
@@ -247,9 +251,9 @@ public class DAPlayerView extends StackPane {
 
                 playlistButton,
                 trackinfoButton,
-                settingsButton,
-
                 reserveButton,
+
+                settingsButton,
                 visualsButton,
                 eqButton,
 
@@ -311,8 +315,9 @@ public class DAPlayerView extends StackPane {
     private void setActiveDisplay(String display) {
         playlistButton.setActive("PLAYLIST".equals(display));
         trackinfoButton.setActive("TRACKINFO".equals(display));
-        settingsButton.setActive("SETTINGS".equals(display));
         reserveButton.setActive(false);
+
+        settingsButton.setActive("SETTINGS".equals(display));
         visualsButton.setActive("VISUALS".equals(display));
         eqButton.setActive("EQUALIZER".equals(display));
     }
@@ -329,10 +334,35 @@ public class DAPlayerView extends StackPane {
         repeatButton.draw();
         playlistButton.draw();
         trackinfoButton.draw();
-        settingsButton.draw();
         reserveButton.draw();
+        settingsButton.draw();
         visualsButton.draw();
         eqButton.draw();
         moveButton.draw();
+    }
+
+    private void savePlaylist() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save Playlist");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("DAPlayer Playlist", "*.daplist"));
+        chooser.setInitialDirectory(playlistManager.getPlaylistDirectory());
+        chooser.setInitialFileName(playlist.getName() + ".daplist");
+        File file = chooser.showSaveDialog(getScene().getWindow());
+        if (file == null) {return;}
+        try {playlistManager.save(playlist, file);}
+        catch (IOException e) {e.printStackTrace();}
+    }
+    
+    private void loadPlaylist() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Load Playlist");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("DAPlayer Playlist", "*.daplist"));
+        chooser.setInitialDirectory(playlistManager.getPlaylistDirectory());
+        File file = chooser.showOpenDialog(getScene().getWindow());
+        if (file == null) {return;}
+        try {
+            playlistManager.load(playlist, file, decoderManager);
+            display.setPlaylist(playlist);
+        } catch (IOException e) {e.printStackTrace();}
     }
 }

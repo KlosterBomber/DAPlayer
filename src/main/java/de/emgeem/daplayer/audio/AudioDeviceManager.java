@@ -13,6 +13,8 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
+import de.emgeem.daplayer.util.AppPaths;
+
 public class AudioDeviceManager {
 
     private static final String AUDIO_DEVICE_KEY = "audio.device";
@@ -21,8 +23,7 @@ public class AudioDeviceManager {
     private final File configFile;
 
     public AudioDeviceManager() {
-        File configDir = new File(System.getProperty("user.home"), "AppData/Roaming/emgeem/DAPlayer");
-        configDir.mkdirs();
+        File configDir = AppPaths.getConfigDirectory();
         configFile = new File(configDir, "settings.properties");
         List<Mixer.Info> devices = getDevices();
         if (!devices.isEmpty()) {selectedDevice = devices.get(0);}

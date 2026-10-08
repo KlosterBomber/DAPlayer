@@ -15,6 +15,7 @@ public class Main extends Application {
     public void start(Stage stage) {
 
         avutil.av_log_set_level(avutil.AV_LOG_ERROR);
+        java.util.logging.Logger.getLogger("org.jaudiotagger").setLevel(java.util.logging.Level.WARNING);
 
         DAPlayerView view = new DAPlayerView();
 
