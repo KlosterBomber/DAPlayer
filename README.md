@@ -1,22 +1,25 @@
 # DAPlayer
 
 DAPlayer is a JavaFX-based desktop audio player for playing and managing
-WAV, MP3 and WMA audio files.
+WAV, MP3, FLAC, OGG, Opus, M4A/AAC, AIFF, WMA, APE and WavPack files as well
+as network streams (internet radio).
 
 The project is developed as a native desktop application and is intended
 to run locally without SaaS dependencies.
 
 ## Version
 
-Current version: **0.2.0**
+Current version: **0.3.0**
 
 ## Features
 
 ### Audio Playback
 
-- WAV playback
+- WAV playback (8/16/24/32 bit integer, 32/64 bit float, WAVE_FORMAT_EXTENSIBLE)
 - MP3 playback
-- WMA playback
+- FLAC, OGG/Vorbis, Opus, M4A/AAC, AIFF, WMA, APE, WavPack playback (FFmpeg)
+- Network streams / internet radio (http, https, …)
+- Multichannel files are downmixed to stereo
 - Play / Pause / Resume
 - Stop
 - Automatic transition to the next track
@@ -30,7 +33,12 @@ Current version: **0.2.0**
 ### Playlist
 
 - File chooser
-- Folder-based file selection
+- Folder-based file selection (recursive, sorted, loaded in the background)
+- ADD LOCATION: add a URL, file or folder by typing it
+- Drag & drop of files, folders, playlists and URLs
+- Double-click / ENTER plays a track, REMOVE / DELETE removes it
+- Save and load playlists (`.daplist`, `.m3u`, `.m3u8`)
+- The last session's playlist is restored on start
 - Playlist management
 - Track selection
 - Track navigation
@@ -55,9 +63,32 @@ Current version: **0.2.0**
 - MP3 seeking
 - WMA seeking
 
+### Keyboard Controls
+
+| Key | Action |
+|---|---|
+| SPACE | Play / Pause |
+| S | Stop |
+| N / PAGE DOWN | Next track |
+| B / PAGE UP | Previous track (restarts the track after 3 s) |
+| LEFT / RIGHT | Seek -5 / +5 s (with SHIFT: 30 s) |
+| + / - | Volume |
+| UP / DOWN | Volume (in PLAYLIST: move selection) |
+| ENTER / DELETE | Play / remove selected track (PLAYLIST) |
+| M | Mute |
+| H / R | Shuffle / Repeat |
+| 1 – 5 | Playlist / Trackinfo / Settings / Visuals / Equalizer |
+| CTRL+O / CTRL+SHIFT+O | Add files / add folder |
+| CTRL+L | Add location (URL) |
+| CTRL+S / CTRL+Q | Save playlist / quit |
+
+Media keys (play, stop, next, previous, mute, volume) are supported as well.
+The list is also shown under SETTINGS / KEY CONTROLS.
+
 ### Equalizer
 
 DAPlayer includes a real-time 10-band graphic equalizer.
+RESET sets all bands to 0 dB, a double-click resets a single band.
 
 Available frequency bands:
 
@@ -122,9 +153,19 @@ The playback controls provide visual feedback for:
 
 ## Settings
 
+Settings are stored in
+
+- Windows: `%APPDATA%\emgeem\DAPlayer`
+- macOS: `~/Library/Application Support/emgeem/DAPlayer`
+- Linux: `~/.config/emgeem/DAPlayer`
+
+and via Java Preferences (volume, shuffle, repeat, accent color, equalizer).
+
 ### Audio Device
 
-DAPlayer allows the user to select the audio output device.
+DAPlayer allows the user to select the audio output device. Changing the
+device during playback continues the current track at the same position.
+If no device is available, the system default device is used.
 
 ### Accent Colors
 
@@ -143,13 +184,21 @@ Currently supported:
 
 - WAV
 - MP3
+- FLAC
+- OGG / Vorbis, Opus
+- M4A / AAC
+- AIFF
 - WMA
+- APE, WavPack
+- Network streams (http, https)
 
-### WMA
+### FFmpeg formats
 
-WMA playback is implemented using FFmpeg through JavaCPP.
+WMA, FLAC, OGG, Opus, M4A/AAC, AIFF, APE, WavPack and network streams are
+decoded by `FfmpegDecoder` using FFmpeg through JavaCPP. Any sample format is
+converted to 16-bit PCM with libswresample.
 
-Supported WMA functionality includes:
+Supported functionality includes:
 
 - Audio decoding
 - Metadata reading
@@ -173,48 +222,23 @@ DAPlayer is built using:
 ## Project Structure
 
 ```text
-src/
-└── main/
-    └── java/
-        └── de/
-            └── emgeem/
-                └── daplayer/
-                    ├── audio/
-                    │   ├── AudioDeviceManager
-                    │   ├── AudioEngine
-                    │   ├── DecoderManager
-                    │   ├── Equalizer
-                    │   ├── EqualizerSettings
-                    │   ├── PlayerController
-                    │   ├── VisualizationData
-                    │   └── VisualizationListener
-                    │
-                    ├── decoder/
-                    │   ├── AudioDecoder
-                    │   ├── Mp3Decoder
-                    │   ├── WavDecoder
-                    │   └── WmaDecoder
-                    │
-                    ├── model/
-                    │   ├── Playlist
-                    │   └── Track
-                    │
-                    └── ui/
-                        ├── DAPlayerView
-                        ├── PlayerDisplay
-                        ├── PlayerPanel
-                        └── display/
-                            ├── StartDisplay
-                            ├── TrackListDisplay
-                            ├── TrackInfoDisplay
-                            ├── SettingsDisplay
-                            ├── EqualizerDisplay
-                            ├── VisualsDisplay
-                            └── visual/
-                                ├── SpectrumVisualization
-                                ├── WaveformVisualization
-                                ├── VuVisualization
-                                └── VectorScope
+src/main/java/de/emgeem/daplayer/
+├── Main
+├── audio/        AudioDeviceManager, AudioEngine, Equalizer, EqualizerSettings,
+│                 PlayerController, VisualizationData, VisualizationListener
+├── decoder/      AudioDecoder, DecoderManager, WavDecoder, Mp3Decoder,
+│                 FfmpegDecoder, TagReader
+├── model/        Playlist, Track
+├── playlist/     PlaylistManager
+├── util/         AppPaths
+└── ui/           DAPlayerView, KeyBindings
+    ├── background/  PlayerPanel, PlayerViewBackground
+    ├── control/     MenuButton, OffButton, PlayModeButton, RoundControlButton, VolumeKnob
+    ├── painter/     UiColors
+    └── display/     PlayerDisplay, StartDisplay, TrackListDisplay, TrackInfoDisplay,
+                     SettingsDisplay, AudioDeviceSettings, AccentColorSettings,
+                     KeyControlsSettings, EqualizerDisplay, VisualsDisplay, ArtworkManager
+        └── visual/  SpectrumVisualization, WaveformVisualization, VuVisualization, VectorScope
 ```
 
 Resources such as fonts and application icons are located under:
@@ -260,12 +284,12 @@ mvn javafx:run
 
 ## Current Development Status
 
-Version **0.2.0** currently provides:
+Version **0.3.0** currently provides:
 
-- WAV playback
-- MP3 playback
-- WMA playback
-- Playlist handling
+- WAV, MP3, FLAC, OGG, Opus, M4A, AIFF, WMA, APE, WavPack playback
+- Network streams
+- Keyboard controls and drag & drop
+- Playlist handling (M3U, session restore)
 - Track navigation
 - Automatic next-track playback
 - Automatic playlist stop
@@ -297,7 +321,7 @@ The project is still under active development. Architecture, user interface and 
 
 Possible future development includes:
 
-- Additional audio formats
-- Music library functionality
+- Music library functionality (RESERVE button)
+- Configurable key bindings
 - Further expansion of the player functionality
 - Further expansion of the user interface

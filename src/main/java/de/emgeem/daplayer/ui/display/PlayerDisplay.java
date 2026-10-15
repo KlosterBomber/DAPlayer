@@ -1,5 +1,6 @@
 package de.emgeem.daplayer.ui.display;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
@@ -26,6 +27,7 @@ public class PlayerDisplay extends StackPane {
     private final SettingsDisplay settingsDisplay;
     private final VisualsDisplay visualsDisplay;
     private final EqualizerDisplay equalizerDisplay;
+    private final List<DisplayMode> displays;
     private final Runnable redrawUiAction;
     private final Consumer<String> activeDisplayAction;
 
@@ -41,46 +43,23 @@ public class PlayerDisplay extends StackPane {
         getChildren().add(backgroundCanvas);
         displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),18);
         displayFontSmall = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),14);
-        
+
         startDisplay = new StartDisplay();
-        startDisplay.prefWidthProperty().bind(widthProperty());
-        startDisplay.prefHeightProperty().bind(heightProperty());
-
         trackListDisplay = new TrackListDisplay(displayFont, addFileAction, addFolderAction, savePlaylistAction, loadPlaylistAction);
-        trackListDisplay.prefWidthProperty().bind(widthProperty());
-        trackListDisplay.prefHeightProperty().bind(heightProperty());
-
         trackInfoDisplay = new TrackInfoDisplay(displayFont);
         trackInfoDisplay.setSeekAction(seekAction);
-        trackInfoDisplay.prefWidthProperty().bind(widthProperty());
-        trackInfoDisplay.prefHeightProperty().bind(heightProperty());
-
         settingsDisplay = new SettingsDisplay(displayFont, displayFontSmall, audioDeviceManager, this::redraw);
-        settingsDisplay.prefWidthProperty().bind(widthProperty());
-        settingsDisplay.prefHeightProperty().bind(heightProperty());
-
         visualsDisplay = new VisualsDisplay(displayFont);
-        visualsDisplay.prefWidthProperty().bind(widthProperty());
-        visualsDisplay.prefHeightProperty().bind(heightProperty());        
-
         equalizerDisplay = new EqualizerDisplay(displayFont, equalizer);
-        equalizerDisplay.prefWidthProperty().bind(widthProperty());
-        equalizerDisplay.prefHeightProperty().bind(heightProperty());
 
-
-        getChildren().addAll(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay,visualsDisplay, equalizerDisplay);
-        trackListDisplay.setVisible(false);
-        trackInfoDisplay.setVisible(false);
-        settingsDisplay.setVisible(false);
-        visualsDisplay.setVisible(false);
-        equalizerDisplay.setVisible(false);
-
-        StackPane.setAlignment(startDisplay, Pos.TOP_LEFT);
-        StackPane.setAlignment(trackListDisplay, Pos.TOP_LEFT);
-        StackPane.setAlignment(trackInfoDisplay, Pos.TOP_LEFT);
-        StackPane.setAlignment(settingsDisplay, Pos.TOP_LEFT);
-        StackPane.setAlignment(visualsDisplay, Pos.TOP_LEFT);
-        StackPane.setAlignment(equalizerDisplay, Pos.TOP_LEFT);
+        displays = List.of(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay, visualsDisplay, equalizerDisplay);
+        for (DisplayMode display : displays) {
+            display.prefWidthProperty().bind(widthProperty());
+            display.prefHeightProperty().bind(heightProperty());
+            display.setVisible(display == startDisplay);
+            StackPane.setAlignment(display, Pos.TOP_LEFT);
+        }
+        getChildren().addAll(displays);
         currentDisplay = startDisplay;
 
         widthProperty().addListener((obs, oldValue, newValue) -> draw());
@@ -94,7 +73,7 @@ public class PlayerDisplay extends StackPane {
         backgroundCanvas.setWidth(w);
         backgroundCanvas.setHeight(h);
         GraphicsContext gc = backgroundCanvas.getGraphicsContext2D();
-        
+
         gc.clearRect(0, 0, w, h);
         drawDisplay(gc, 0, 0, w, h);
         currentDisplay.draw();
@@ -126,63 +105,20 @@ public class PlayerDisplay extends StackPane {
         gc.strokeLine(x + w - 11, y + 14, x + w - 11, y + h - 14);
     }
 
+    private void show(DisplayMode display, String name) {
+        for (DisplayMode d : displays) {d.setVisible(d == display);}
+        currentDisplay = display;
+        activeDisplayAction.accept(name);
+        draw();
+    }
 
-    public void showTrackList() {
-        startDisplay.setVisible(false);
-        trackInfoDisplay.setVisible(false);
-        settingsDisplay.setVisible(false);
-        visualsDisplay.setVisible(false);
-        equalizerDisplay.setVisible(false);
-        trackListDisplay.setVisible(true);
-        currentDisplay = trackListDisplay;
-        activeDisplayAction.accept("PLAYLIST");
-        draw();
-    }
-    public void showTrackInfo() {
-        startDisplay.setVisible(false);
-        trackListDisplay.setVisible(false);
-        settingsDisplay.setVisible(false);
-        visualsDisplay.setVisible(false);
-        equalizerDisplay.setVisible(false);
-        trackInfoDisplay.setVisible(true);
-        currentDisplay = trackInfoDisplay;
-        activeDisplayAction.accept("TRACKINFO");
-        draw();
-    }
-    public void showSettings() {
-        startDisplay.setVisible(false);
-        trackListDisplay.setVisible(false);
-        trackInfoDisplay.setVisible(false);
-        visualsDisplay.setVisible(false);
-        equalizerDisplay.setVisible(false);
-        settingsDisplay.setVisible(true);
-        currentDisplay = settingsDisplay;
-        activeDisplayAction.accept("SETTINGS");
-        draw();
-    }
-    public void showVisuals() {
-        startDisplay.setVisible(false);
-        trackListDisplay.setVisible(false);
-        trackInfoDisplay.setVisible(false);
-        settingsDisplay.setVisible(false);
-        equalizerDisplay.setVisible(false);
-        visualsDisplay.setVisible(true);
-        currentDisplay = visualsDisplay;
-        activeDisplayAction.accept("VISUALS");
-        draw();
-    }
-    public void showEqualizer() {
-        startDisplay.setVisible(false);
-        trackListDisplay.setVisible(false);
-        trackInfoDisplay.setVisible(false);
-        settingsDisplay.setVisible(false);
-        visualsDisplay.setVisible(false);
-        equalizerDisplay.setVisible(true);
-        currentDisplay = equalizerDisplay;
-        activeDisplayAction.accept("EQUALIZER");
-        draw();
-    }
-    
+    public void showTrackList() {show(trackListDisplay, "PLAYLIST");}
+    public void showTrackInfo() {show(trackInfoDisplay, "TRACKINFO");}
+    public void showSettings() {show(settingsDisplay, "SETTINGS");}
+    public void showVisuals() {show(visualsDisplay, "VISUALS");}
+    public void showEqualizer() {show(equalizerDisplay, "EQUALIZER");}
+
+    public boolean isTrackListVisible() {return currentDisplay == trackListDisplay;}
 
     public void setPlaylist(Playlist playlist) {
         trackListDisplay.setPlaylist(playlist);
@@ -194,7 +130,18 @@ public class PlayerDisplay extends StackPane {
         trackInfoDisplay.setPlaybackProgress(position, duration);
     }
 
-    public void updateCurrentTrack() {trackListDisplay.updateCurrentTrack();}
+    public void updateCurrentTrack() {
+        trackListDisplay.updateCurrentTrack();
+        trackInfoDisplay.draw();
+    }
+
+    public void showError(String message) {trackInfoDisplay.setErrorText(message);}
+
+    public TrackListDisplay getTrackListDisplay() {return trackListDisplay;}
+    public TrackInfoDisplay getTrackInfoDisplay() {return trackInfoDisplay;}
+    public SettingsDisplay getSettingsDisplay() {return settingsDisplay;}
+    public VisualsDisplay getVisualsDisplay() {return visualsDisplay;}
+    public EqualizerDisplay getEqualizerDisplay() {return equalizerDisplay;}
 
     public VisualizationListener getVisualizationListener() {return visualsDisplay;}
 }

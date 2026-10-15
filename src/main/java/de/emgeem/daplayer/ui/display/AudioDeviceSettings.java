@@ -17,7 +17,10 @@ public class AudioDeviceSettings extends StackPane {
     private final Font displayFont;
     private final AudioDeviceManager audioDeviceManager;
     private final Canvas canvas;
+    private static final int MAX_VISIBLE_DEVICES = 8;
+
     private boolean deviceListOpen;
+    private Runnable deviceChangedAction;
 
     public AudioDeviceSettings(Font displayFont, AudioDeviceManager audioDeviceManager) {
         this.displayFont = displayFont;
@@ -28,6 +31,8 @@ public class AudioDeviceSettings extends StackPane {
         heightProperty().addListener((obs, oldValue, newValue) -> draw());
         setOnMouseClicked(e -> handleMouseClick(e.getX(), e.getY()));
     }
+
+    public void setDeviceChangedAction(Runnable action) {this.deviceChangedAction = action;}
 
     public void draw() {
         double w = getWidth();
@@ -61,6 +66,10 @@ public class AudioDeviceSettings extends StackPane {
             gc.setFill(UiColors.accentLight());
             gc.setFont(displayFont);
             gc.fillText(audioDeviceManager.getSelectedDevice().getName(), x + 10, y + 21);
+        } else {
+            gc.setFill(UiColors.accentLight());
+            gc.setFont(displayFont);
+            gc.fillText("SYSTEM DEFAULT", x + 10, y + 21);
         }
         // Pfeil
         gc.setFill(UiColors.accentLight());
@@ -83,13 +92,15 @@ public class AudioDeviceSettings extends StackPane {
         List<Mixer.Info> devices = audioDeviceManager.getDevices();
         double listY = fieldY + fieldHeight;
         double itemHeight = 30;
-        for (int i = 0; i < devices.size(); i++) {
+        for (int i = 0; i < Math.min(devices.size(), MAX_VISIBLE_DEVICES); i++) {
             double itemY = listY + i * itemHeight;
             if (mouseX >= fieldX && mouseX <= fieldX + fieldWidth && mouseY >= itemY && mouseY <= itemY + itemHeight) {
+                boolean changed = !devices.get(i).equals(audioDeviceManager.getSelectedDevice());
                 audioDeviceManager.setSelectedDevice(devices.get(i));
                 audioDeviceManager.save();
                 deviceListOpen = false;
                 draw();
+                if (changed && deviceChangedAction != null) {deviceChangedAction.run();}
                 return;
             }
         }
@@ -103,7 +114,15 @@ public class AudioDeviceSettings extends StackPane {
         double y = 95;
         double width = 700;
         double itemHeight = 30;
-        for (int i = 0; i < devices.size(); i++) {
+        if (devices.isEmpty()) {
+            gc.setFill(Color.rgb(20, 20, 20));
+            gc.fillRect(x, y, width, itemHeight);
+            gc.setFill(UiColors.accentLight());
+            gc.setFont(displayFont);
+            gc.fillText("NO OUTPUT DEVICE FOUND - SYSTEM DEFAULT IS USED", x + 10, y + 21);
+            return;
+        }
+        for (int i = 0; i < Math.min(devices.size(), MAX_VISIBLE_DEVICES); i++) {
             Mixer.Info device = devices.get(i);
             double itemY = y + i * itemHeight;
             if (device.equals(audioDeviceManager.getSelectedDevice())) {gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.15));} 

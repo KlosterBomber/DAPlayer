@@ -4,17 +4,27 @@ import de.emgeem.daplayer.audio.VisualizationData;
 import de.emgeem.daplayer.ui.painter.UiColors;
 import javafx.scene.canvas.GraphicsContext;
 
+/**
+ * Spektrum mit {@value #BAR_COUNT} logarithmisch verteilten Bändern (30 Hz – 18 kHz),
+ * Hann-Fenster und sanftem Abfall der Balken.
+ */
 public class SpectrumVisualization {
 
+    private static final int BAR_COUNT = 80;
+    private static final double MIN_FREQUENCY = 30.0;
+    private static final double MAX_FREQUENCY = 18000.0;
+    private static final double DB_RANGE = 70.0;
+    private static final double FALL_PER_FRAME = 0.025;
+
     private final GraphicsContext gc;
+    private final double[] levels = new double[BAR_COUNT];
 
     private double width;
     private double height;
 
-    private static final int BAR_COUNT = 80;
-
     private float[] samples;
     private float sampleRate;
+    private float[] lastAnalyzed;
 
     public SpectrumVisualization(GraphicsContext gc) {
         this.gc = gc;
@@ -31,27 +41,53 @@ public class SpectrumVisualization {
     }
 
     public void draw() {
-        if (samples == null || samples.length == 0) {return;}
+        if (samples == null || samples.length < 2 || sampleRate <= 0) {return;}
+        if (samples != lastAnalyzed) {
+            analyze();
+            lastAnalyzed = samples;
+        } else {
+            // keine neuen Daten (z. B. Pause): langsam abfallen lassen
+            for (int i = 0; i < BAR_COUNT; i++) {levels[i] = Math.max(0, levels[i] - FALL_PER_FRAME * 0.2);}
+        }
+        if (UiColors.isRgbVisualization()) {gc.setFill(UiColors.accentRGB());} else {gc.setFill(UiColors.getAccent());}
+        double slot = width / BAR_COUNT;
+        double barWidth = Math.max(1, slot - 3);
+        for (int i = 0; i < BAR_COUNT; i++) {
+            double barHeight = levels[i] * height;
+            if (barHeight < 1) {continue;}
+            gc.fillRect(i * slot + 1.5, height - barHeight, barWidth, barHeight);
+        }
+    }
+
+    private void analyze() {
         int fftSize = Integer.highestOneBit(samples.length);
         if (fftSize < 2) {return;}
         double[] real = new double[fftSize];
         double[] imag = new double[fftSize];
-        for (int i = 0; i < fftSize; i++) {real[i] = samples[i];}
+        int offset = samples.length - fftSize; // jüngste Samples verwenden
+        for (int i = 0; i < fftSize; i++) {
+            double window = 0.5 - 0.5 * Math.cos(2.0 * Math.PI * i / (fftSize - 1)); // Hann
+            real[i] = samples[offset + i] * window;
+        }
         fft(real, imag);
         int binCount = fftSize / 2;
-        double barWidth = width / binCount;
-        if (UiColors.isRgbVisualization()) {gc.setFill(UiColors.accentRGB());} else {gc.setFill(UiColors.getAccent());}
-        for (int i = 1; i < binCount; i++) {
-            double magnitude = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
-            double level = magnitude / fftSize;
-            // logarithmische Pegeldarstellung
+        double binWidth = sampleRate / (double) fftSize;
+        double maxFrequency = Math.min(MAX_FREQUENCY, sampleRate / 2.0);
+        double ratio = Math.log(maxFrequency / MIN_FREQUENCY);
+        for (int bar = 0; bar < BAR_COUNT; bar++) {
+            double fLow = MIN_FREQUENCY * Math.exp(ratio * bar / BAR_COUNT);
+            double fHigh = MIN_FREQUENCY * Math.exp(ratio * (bar + 1) / BAR_COUNT);
+            int lowBin = Math.max(1, (int) Math.floor(fLow / binWidth));
+            int highBin = Math.min(binCount - 1, Math.max(lowBin, (int) Math.ceil(fHigh / binWidth)));
+            double peak = 0;
+            for (int b = lowBin; b <= highBin; b++) {
+                peak = Math.max(peak, Math.hypot(real[b], imag[b]));
+            }
+            // Normierung: Hann-Fenster halbiert die Amplitude -> * 4 / N
+            double level = peak * 4.0 / fftSize;
             double db = 20.0 * Math.log10(level + 1e-9);
-            double normalized = (db + 80.0) / 80.0;
-            normalized = Math.max(0.0, Math.min(1.0, normalized));
-            double barHeight = normalized * height;
-            double x = i * barWidth;
-            double y = height - barHeight;
-            gc.fillRect(x, y, Math.max(1, barWidth - 1), barHeight);
+            double normalized = Math.max(0.0, Math.min(1.0, (db + DB_RANGE) / DB_RANGE));
+            levels[bar] = normalized > levels[bar] ? normalized : Math.max(normalized, levels[bar] - FALL_PER_FRAME);
         }
     }
 

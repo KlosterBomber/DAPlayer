@@ -145,8 +145,8 @@ public class AccentColorSettings extends StackPane {
         gc.strokeRoundRect(x, y, width, height, 6, 6);
         gc.setFill(UiColors.accentLight());
         gc.setFont(displayFont);
-        double textWidth = gc.getFont().getSize() * 10 * 0.6;
-        gc.fillText("ÜBERNEHMEN", x + (width - textWidth) / 2, y + 21);
+        double textWidth = gc.getFont().getSize() * 5 * 0.6;
+        gc.fillText("APPLY", x + (width - textWidth) / 2, y + 21);
     }
 
     private void drawRgbToggle(GraphicsContext gc) {

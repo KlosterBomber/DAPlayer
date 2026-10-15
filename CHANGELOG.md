@@ -2,6 +2,76 @@
 
 All notable changes to the DAPlayer project are documented in this file.
 
+## [0.3.0] - 2026-10-15
+
+Completion of the open features, new formats and many bug fixes.
+
+### Added
+
+#### Formats & Streams
+
+- Universal FFmpeg decoder (`FfmpegDecoder`) replaces `WmaDecoder`
+- New formats: FLAC, OGG/Vorbis, Opus, M4A/AAC, AIFF, APE, WavPack
+- Network streams / internet radio (http, https, ...) via **ADD LOCATION**
+- WAV: 8/24/32 bit integer, 32/64 bit float, `WAVE_FORMAT_EXTENSIBLE`
+- Multichannel material is downmixed to stereo (WAV and FFmpeg)
+- Additional WAV INFO tags (genre, year, track number), UTF-8 detection
+
+#### Playlist
+
+- Double-click or ENTER plays a track
+- **REMOVE** button or DELETE removes the selected track
+- **ADD LOCATION**: add a URL, file or folder by typing it
+- Drag & drop of files, folders, playlists and URLs onto the window
+- Folders are scanned recursively and sorted
+- Files are loaded in the background (progress "LOADING x/y")
+- Load and save M3U/M3U8 (relative paths are resolved)
+- Track count and total duration in the header line
+- The playlist of the last session is restored on start
+
+#### Controls
+
+- Keyboard controls (see SETTINGS / **KEY CONTROLS**)
+- Volume, shuffle, repeat and the last folder are remembered
+- EQUALIZER: **RESET** button, double-click resets a single band
+- PREV restarts the current track after more than 3 s
+- Error messages for unplayable files in TRACKINFO
+- Active submenu button in SETTINGS and VISUALS is highlighted
+- Spectrum with 80 logarithmic bands, Hann window and fall-off
+- TRACKINFO shows sample rate / bit depth / channels / bit rate
+- Application icon and window title
+
+### Fixed
+
+- Artwork was re-read from disk ~60 times per second during playback (now LRU cache)
+- MP3: mono and MPEG-2 files (e.g. 22.05 kHz) were decoded incorrectly (`SampleBuffer.getBufferLength()` was ignored)
+- MP3: corrupt frames no longer end the whole track
+- WMA tags were read with ID3 frame IDs and therefore empty; now format-independent via `FieldKey`
+- Dates like `2004-05-01` threw an exception, losing all tags of the file
+- 24-bit WAV (`WAVE_FORMAT_EXTENSIBLE`) was rejected; 8-bit WAV produced noise
+- Hit areas of the playlist buttons did not match the drawn buttons
+- Button state (PLAYING/PAUSED/STOPPED) was partly wrong after NEXT/PREV or at the end of the playlist
+- NEXT/PREV ignored shuffle mode
+- Shuffle + repeat with a single track threw an `IndexOutOfBoundsException`
+- Shuffle ignored tracks added later
+- EQ bands above Nyquist could become unstable; coefficients are now computed thread-safely in the audio thread
+- `MASTER_GAIN` was used without checking (crash on some devices); software volume as fallback
+- Missing audio devices prevented playback; fallback to the system default device
+- Playback threads could close each other's decoder/line on fast track changes
+- Position display ran ahead of the audible audio by the buffer size
+- Configuration path was hard-wired to `AppData/Roaming` (Windows)
+- Visualization no longer freezes on the last frame after STOP
+- OFF shuts the application down cleanly (including saving the session)
+
+### Changed
+
+- Audio engine: every playback runs in its own session (thread, decoder, line); files and streams are opened in the playback thread
+- `PlayerController` manages a central playback state (`STOPPED`, `PLAYING`, `PAUSED`)
+- Lower seek latency through a smaller output buffer (300 ms)
+- The ACCENT COLORS button "ÜBERNEHMEN" is now "APPLY"
+
+---
+
 ## [0.2.0] - 2026-09-28
 
 WMA support and continued playback and visualization improvements.
@@ -222,5 +292,5 @@ MAJOR.MINOR.PATCH
 The project is currently at:
 
 ```text
-0.2.0
+0.3.0
 ```

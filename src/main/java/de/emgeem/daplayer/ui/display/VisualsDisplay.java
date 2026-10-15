@@ -22,7 +22,8 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
     private WaveformVisualization waveformVisualization;
     private VuVisualization vuVisualization;
     private VectorScope vectorScope;
-    private VisualizationData latestData;
+    private volatile VisualizationData latestData;
+    private boolean cleared = true;
     private VisualizationMode currentMode = VisualizationMode.SPECTRUM;
 
     public VisualsDisplay(Font displayFont) {
@@ -36,7 +37,16 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
         AnimationTimer animationTimer = new AnimationTimer() {
             @Override 
             public void handle(long now) {
-                if (latestData == null) {return;}
+                if (!isVisible()) {return;}
+                VisualizationData data = latestData;
+                if (data == null) {
+                    if (!cleared) {
+                        canvas.getGraphicsContext2D().clearRect(30, 30, canvas.getWidth() - 60, 300);
+                        cleared = true;
+                    }
+                    return;
+                }
+                cleared = false;
                 double visualWidth = canvas.getWidth() - 60;
                 double visualHeight = 300;
                 GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -45,19 +55,19 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
                 gc.translate(30, 30);
                 if (currentMode == VisualizationMode.SPECTRUM) {
                     spectrumVisualization.setSize(visualWidth, visualHeight);
-                    spectrumVisualization.update(latestData);
+                    spectrumVisualization.update(data);
                     spectrumVisualization.draw();
                 } else if (currentMode == VisualizationMode.WAVEFORM) {
                     waveformVisualization.setSize(visualWidth, visualHeight);
-                    waveformVisualization.update(latestData);
+                    waveformVisualization.update(data);
                     waveformVisualization.draw();
                 } else if (currentMode == VisualizationMode.VU_METER) {
                     vuVisualization.setSize(visualWidth, visualHeight);
-                    vuVisualization.update(latestData);
+                    vuVisualization.update(data);
                     vuVisualization.draw();
                 } else if (currentMode == VisualizationMode.VECTSCOP) {
                     vectorScope.setSize(visualWidth, visualHeight);
-                    vectorScope.update(latestData);
+                    vectorScope.update(data);
                     vectorScope.draw();
                 }
                 gc.restore();
@@ -105,15 +115,18 @@ public class VisualsDisplay extends DisplayMode implements VisualizationListener
     }
 
     private void drawButton(GraphicsContext gc, double x, double y, double width, double height, String text) {
-        gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.08));
-        gc.fillRoundRect(x, y, width, height, 6, 6);
-        gc.setStroke(UiColors.accentLight());
-        gc.setLineWidth(1);
-        gc.strokeRoundRect(x, y, width, height, 6, 6);
-        gc.setFill(UiColors.accentLight());
-        gc.setFont(displayFont);
-        double textWidth = gc.getFont().getSize() * text.length() * 0.6;
-        gc.fillText(text, x + (width - textWidth) / 2, y + 21);
+        boolean active = switch (text) {
+            case "SPECTRUM" -> currentMode == VisualizationMode.SPECTRUM;
+            case "WAVEFORM" -> currentMode == VisualizationMode.WAVEFORM;
+            case "VU-METER" -> currentMode == VisualizationMode.VU_METER;
+            default -> currentMode == VisualizationMode.VECTSCOP;
+        };
+        SettingsDisplay.drawSubmenuButton(gc, displayFont, x, y, width, height, text, active);
+    }
+
+    /** Nach Stopp: Anzeige leeren statt das letzte Bild einzufrieren. */
+    public void clear() {
+        latestData = null;
     }
 
     @Override
