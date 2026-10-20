@@ -43,6 +43,11 @@
             <artifactId>ffmpeg-platform</artifactId>
             <version>8.1.2-1.5.14</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+        </dependency>
     </dependencies>
 
     <build>
