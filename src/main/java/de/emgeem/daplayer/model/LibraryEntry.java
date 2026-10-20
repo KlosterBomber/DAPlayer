@@ -1,8 +1,9 @@
 package de.emgeem.daplayer.model;
 
 import java.io.File;
+import java.util.Locale;
 
-public class LibaryEntry {
+public class LibraryEntry {
 
     public static final String UNKNOWN_ARTIST = "UNKNOWN ARTIST";
     public static final String UNKNOWN_ALBUM = "UNKNOWN ALBUM";
@@ -26,11 +27,11 @@ public class LibaryEntry {
     private int channels;
     private int bitRate;
 
-    public LibaryEntry() {}
+    public LibraryEntry() {}
 
-    public static LibaryEntry fromTrack(Track track) {
+    public static LibraryEntry fromTrack(Track track) {
         File file = track.getFile();
-        LibaryEntry entry = new LibaryEntry();
+        LibraryEntry entry = new LibraryEntry();
         entry.path = file.getAbsolutePath();
         entry.fileSize = file.length();
         entry.lastModified = file.lastModified();
@@ -76,6 +77,8 @@ public class LibaryEntry {
         if (!isBlank(artist)) {return artist.trim();}
         return UNKNOWN_ARTIST;
     }
+    public String getArtistKey() {return toKey(getDisplayArtist());}
+    public static String toKey(String text) {return text.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);}
     public String getDisplayAlbum() {
         if (!isBlank(album)) {return album.trim();}
         File parent = new File(path).getParentFile();

@@ -1,4 +1,4 @@
-package de.emgeem.daplayer.libary;
+package de.emgeem.daplayer.library;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,40 +16,40 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 
-import de.emgeem.daplayer.model.LibaryEntry;
+import de.emgeem.daplayer.model.LibraryEntry;
 import de.emgeem.daplayer.util.AppPaths;
 
-public class LibaryStore {
+public class LibraryStore {
 
-    private static final String FILE_NAME = "libary.json";
+    private static final String FILE_NAME = "library.json";
     private static final int FORMAT_VERSION = 1;
 
     private final Path file;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public LibaryStore() {this(new File(AppPaths.getConfigDirectory(), FILE_NAME).toPath());}
-    public LibaryStore(Path file) {this.file = file;}
+    public LibraryStore() {this(new File(AppPaths.getConfigDirectory(), FILE_NAME).toPath());}
+    public LibraryStore(Path file) {this.file = file;}
     public Path getFile() {return file;}
 
-    public static class LibaryData {
+    public static class LibraryData {
         private int version = FORMAT_VERSION;
         private List<String> folders = new ArrayList<>();
-        private List<LibaryEntry> entries = new ArrayList<>();
-        public LibaryData() {}
-        public LibaryData(List<String> folders, List<LibaryEntry> entries) {
+        private List<LibraryEntry> entries = new ArrayList<>();
+        public LibraryData() {}
+        public LibraryData(List<String> folders, List<LibraryEntry> entries) {
             this.folders = new ArrayList<>(folders);
             this.entries = new ArrayList<>(entries);
         }
         public int getVersion() {return version;}
         public List<String> getFolders() {return folders;}
-        public List<LibaryEntry> getEntries() {return entries;}
+        public List<LibraryEntry> getEntries() {return entries;}
     }
 
-    public LibaryData load() {
-        if (!Files.isRegularFile(file)) {return new LibaryData();}
+    public LibraryData load() {
+        if (!Files.isRegularFile(file)) {return new LibraryData();}
         try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            LibaryData data = gson.fromJson(reader, LibaryData.class);
-            if (data == null) {return new LibaryData();}
+            LibraryData data = gson.fromJson(reader, LibraryData.class);
+            if (data == null) {return new LibraryData();}
             if (data.folders == null) {data.folders = new ArrayList<>();}
             if (data.entries == null) {data.entries = new ArrayList<>();}
             data.entries.removeIf(entry -> entry == null || entry.getPath() == null);
@@ -57,7 +57,7 @@ public class LibaryStore {
         } catch (IOException | JsonParseException e) {
             System.err.println("Mediathek nicht lesbar: " + e.getMessage());
             backupBrokenFile();
-            return new LibaryData();
+            return new LibraryData();
         }
     }
 
@@ -69,7 +69,7 @@ public class LibaryStore {
         } catch (IOException e) {System.err.println("Sicherung fehlgeschlagen: " + e.getMessage());}
     }
 
-    public void save(LibaryData data) throws IOException {
+    public void save(LibraryData data) throws IOException {
         Path temp = file.resolveSibling(FILE_NAME + ".tmp");
         try (Writer writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {gson.toJson(data, writer);}
         try {Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);}
