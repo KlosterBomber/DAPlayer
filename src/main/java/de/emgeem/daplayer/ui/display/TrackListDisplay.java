@@ -348,7 +348,7 @@ public class TrackListDisplay extends DisplayMode {
     public void setRemoveIndexAction(IntConsumer action) {this.removeIndexAction = action;}
     public void setPlayingSupplier(java.util.function.BooleanSupplier supplier) {this.playingSupplier = supplier;}
 
-    private String limitText(String text, int maxCharacters) {
+    static String limitText(String text, int maxCharacters) {
         if (text == null) {return "";}
         if (text.length() <= maxCharacters) {return text;}
         return text.substring(0, maxCharacters - 3) + "...";

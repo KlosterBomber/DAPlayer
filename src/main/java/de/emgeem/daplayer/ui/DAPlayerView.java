@@ -20,6 +20,9 @@ import de.emgeem.daplayer.audio.Equalizer;
 import de.emgeem.daplayer.audio.EqualizerSettings;
 import de.emgeem.daplayer.audio.PlayerController;
 import de.emgeem.daplayer.decoder.DecoderManager;
+import de.emgeem.daplayer.library.LibraryScanner;
+import de.emgeem.daplayer.library.LibraryStore;
+import de.emgeem.daplayer.library.MediaLibrary;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.playlist.PlaylistManager;
@@ -75,6 +78,7 @@ public class DAPlayerView extends StackPane {
     private final PlayerDisplay display;
     private final AudioDeviceManager audioDeviceManager = new AudioDeviceManager();
     private final PlaylistManager playlistManager = new PlaylistManager();
+    private final MediaLibrary library = new MediaLibrary(new LibraryStore(), new LibraryScanner(decoderManager));
     private final ExecutorService loader = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "DAPlayer-Loader");
         t.setDaemon(true);
@@ -92,7 +96,7 @@ public class DAPlayerView extends StackPane {
     private final OffButton offButton;
     private final MenuButton playlistButton;
     private final MenuButton trackinfoButton;
-    private final MenuButton reserveButton;
+    private final MenuButton libraryButton;
     private final MenuButton settingsButton;
     private final MenuButton visualsButton;
     private final MenuButton eqButton;
@@ -132,6 +136,13 @@ public class DAPlayerView extends StackPane {
         display = new PlayerDisplay(1158, DISPLAY_HEIGHT, this::openFiles, this::openFolder, audioDeviceManager, equalizer, this::redrawUi, controller::seekToMillis,
                                     this::setActiveDisplay, this::savePlaylist, this::loadPlaylist);
         display.setPlaylist(playlist);
+        library.load();
+        display.getLibraryDisplay().setLibrary(library);
+        display.getLibraryDisplay().setAddTracksAction(tracks -> {
+            playlist.addTracks(tracks);
+            controller.playlistChanged();
+            display.setPlaylist(playlist);
+        });
         audioEngine.setVisualizationListener(display.getVisualizationListener());
         displayArea.getChildren().add(display);
 
@@ -213,10 +224,11 @@ public class DAPlayerView extends StackPane {
         trackinfoButton.setTranslateX(175);
         trackinfoButton.setTranslateY(425);
 
-        reserveButton = new MenuButton("RESERVE", 150, 40, MenuButton.Shape.RIGHT);
-        StackPane.setAlignment(reserveButton, Pos.TOP_LEFT);
-        reserveButton.setTranslateX(325);
-        reserveButton.setTranslateY(425);
+        libraryButton = new MenuButton("MEDIALIBRARY", 150, 40, MenuButton.Shape.RIGHT);
+        libraryButton.setOnMouseClicked(e -> display.showLibrary());
+        StackPane.setAlignment(libraryButton, Pos.TOP_LEFT);
+        libraryButton.setTranslateX(325);
+        libraryButton.setTranslateY(425);
 
         settingsButton = new MenuButton("SETTINGS", 150, 40, MenuButton.Shape.LEFT);
         settingsButton.setOnMouseClicked(e -> display.showSettings());
@@ -282,7 +294,7 @@ public class DAPlayerView extends StackPane {
 
                 playlistButton,
                 trackinfoButton,
-                reserveButton,
+                libraryButton,
 
                 settingsButton,
                 visualsButton,
@@ -601,7 +613,7 @@ public class DAPlayerView extends StackPane {
     private void setActiveDisplay(String display) {
         playlistButton.setActive("PLAYLIST".equals(display));
         trackinfoButton.setActive("TRACKINFO".equals(display));
-        reserveButton.setActive(false);
+        libraryButton.setActive("LIBRARY".equals(display));
 
         settingsButton.setActive("SETTINGS".equals(display));
         visualsButton.setActive("VISUALS".equals(display));
@@ -620,7 +632,7 @@ public class DAPlayerView extends StackPane {
         repeatButton.draw();
         playlistButton.draw();
         trackinfoButton.draw();
-        reserveButton.draw();
+        libraryButton.draw();
         settingsButton.draw();
         visualsButton.draw();
         eqButton.draw();

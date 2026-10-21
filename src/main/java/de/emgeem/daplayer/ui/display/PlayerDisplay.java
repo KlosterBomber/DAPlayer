@@ -24,6 +24,7 @@ public class PlayerDisplay extends StackPane {
     private final StartDisplay startDisplay;
     private final TrackListDisplay trackListDisplay;
     private final TrackInfoDisplay trackInfoDisplay;
+    private final LibraryDisplay libraryDisplay;
     private final SettingsDisplay settingsDisplay;
     private final VisualsDisplay visualsDisplay;
     private final EqualizerDisplay equalizerDisplay;
@@ -48,11 +49,12 @@ public class PlayerDisplay extends StackPane {
         trackListDisplay = new TrackListDisplay(displayFont, addFileAction, addFolderAction, savePlaylistAction, loadPlaylistAction);
         trackInfoDisplay = new TrackInfoDisplay(displayFont);
         trackInfoDisplay.setSeekAction(seekAction);
+        libraryDisplay = new LibraryDisplay(displayFont);
         settingsDisplay = new SettingsDisplay(displayFont, displayFontSmall, audioDeviceManager, this::redraw);
         visualsDisplay = new VisualsDisplay(displayFont);
         equalizerDisplay = new EqualizerDisplay(displayFont, equalizer);
 
-        displays = List.of(startDisplay, trackListDisplay, trackInfoDisplay, settingsDisplay, visualsDisplay, equalizerDisplay);
+        displays = List.of(startDisplay, trackListDisplay, trackInfoDisplay, libraryDisplay, settingsDisplay, visualsDisplay, equalizerDisplay);
         for (DisplayMode display : displays) {
             display.prefWidthProperty().bind(widthProperty());
             display.prefHeightProperty().bind(heightProperty());
@@ -114,6 +116,7 @@ public class PlayerDisplay extends StackPane {
 
     public void showTrackList() {show(trackListDisplay, "PLAYLIST");}
     public void showTrackInfo() {show(trackInfoDisplay, "TRACKINFO");}
+    public void showLibrary() {show(libraryDisplay, "LIBRARY");}
     public void showSettings() {show(settingsDisplay, "SETTINGS");}
     public void showVisuals() {show(visualsDisplay, "VISUALS");}
     public void showEqualizer() {show(equalizerDisplay, "EQUALIZER");}
@@ -139,6 +142,7 @@ public class PlayerDisplay extends StackPane {
 
     public TrackListDisplay getTrackListDisplay() {return trackListDisplay;}
     public TrackInfoDisplay getTrackInfoDisplay() {return trackInfoDisplay;}
+    public LibraryDisplay getLibraryDisplay() {return libraryDisplay;}
     public SettingsDisplay getSettingsDisplay() {return settingsDisplay;}
     public VisualsDisplay getVisualsDisplay() {return visualsDisplay;}
     public EqualizerDisplay getEqualizerDisplay() {return equalizerDisplay;}
