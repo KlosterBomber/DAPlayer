@@ -35,7 +35,6 @@ import de.emgeem.daplayer.ui.control.RoundControlButton;
 import de.emgeem.daplayer.ui.control.VolumeKnob;
 import de.emgeem.daplayer.ui.display.PlayerDisplay;
 import de.emgeem.daplayer.ui.display.TrackListDisplay;
-
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -224,7 +223,7 @@ public class DAPlayerView extends StackPane {
         trackinfoButton.setTranslateX(175);
         trackinfoButton.setTranslateY(425);
 
-        libraryButton = new MenuButton("MEDIALIBRARY", 150, 40, MenuButton.Shape.RIGHT);
+        libraryButton = new MenuButton("LIBRARY", 150, 40, MenuButton.Shape.RIGHT);
         libraryButton.setOnMouseClicked(e -> display.showLibrary());
         StackPane.setAlignment(libraryButton, Pos.TOP_LEFT);
         libraryButton.setTranslateX(325);
@@ -393,9 +392,13 @@ public class DAPlayerView extends StackPane {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (handleKey(e)) {e.consume();}
         });
+        scene.addEventHandler(KeyEvent.KEY_TYPED, e -> {
+            if (display.isLibraryVisible() && display.getLibraryDisplay().handleTyped(e.getCharacter())) {e.consume();}
+        });
     }
 
     private boolean handleKey(KeyEvent e) {
+        if (display.isLibraryVisible() && display.getLibraryDisplay().handleKey(e)) {return true;}
         KeyCode code = e.getCode();
         boolean ctrl = e.isShortcutDown();
         TrackListDisplay trackList = display.getTrackListDisplay();

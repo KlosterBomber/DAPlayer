@@ -122,6 +122,7 @@ public class PlayerDisplay extends StackPane {
     public void showEqualizer() {show(equalizerDisplay, "EQUALIZER");}
 
     public boolean isTrackListVisible() {return currentDisplay == trackListDisplay;}
+    public boolean isLibraryVisible() {return currentDisplay == libraryDisplay;}
 
     public void setPlaylist(Playlist playlist) {
         trackListDisplay.setPlaylist(playlist);
