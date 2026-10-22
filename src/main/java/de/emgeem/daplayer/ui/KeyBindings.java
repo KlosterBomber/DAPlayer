@@ -19,7 +19,7 @@ public final class KeyBindings {
         new Binding("DELETE", "REMOVE SELECTED TRACK"),
         new Binding("M", "MUTE"),
         new Binding("H  /  R", "SHUFFLE  /  REPEAT"),
-        new Binding("1 - 5", "PLAYLIST/INFO/SETTINGS/VISUALS/EQ"),
+        new Binding("1 - 6", "LIST/INFO/LIBRARY/SETTINGS/VISUALS/EQ"),
         new Binding("CTRL+O / CTRL+SHIFT+O", "ADD FILES / ADD FOLDER"),
         new Binding("CTRL+L", "ADD LOCATION (URL)"),
         new Binding("CTRL+S / CTRL+Q", "SAVE PLAYLIST / QUIT")

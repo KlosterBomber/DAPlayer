@@ -2,6 +2,80 @@
 
 All notable changes to the DAPlayer project are documented in this file.
 
+## [0.4.0] - 2026-10-22
+ 
+Music library: a persistent, searchable collection of all tracks in the
+user's music folders, fully integrated into the player display.
+ 
+### Added
+ 
+#### Music Library
+ 
+- New **LIBRARY** display with three columns: ARTISTS | ALBUMS | TITLES
+- Selecting an artist shows their albums, selecting an album shows its tracks
+- Albums are listed with year, tracks with track number and duration
+- Track count and total duration of the library in the status line
+- Artist names: the most frequent spelling is used, names written completely
+  in lower case are capitalized; the album artist takes precedence over the
+  track artist
+- Tracks without an album tag are grouped by their folder name
+- Sorting follows German collation rules (umlauts, case)
+- Mouse wheel scrolls each column separately
+#### Library Management
+ 
+- **FOLDERS** view: add and remove library folders
+- Unreachable folders (e.g. disconnected drives) are marked **OFFLINE**
+- Adding or removing a folder starts a rescan automatically
+- **RESCAN** runs in the background with progress display (`SCANNING x/y`)
+  and can be stopped with **CANCEL**
+- Incremental scan: only new or changed files are read again
+  (file size and modification date)
+- Offline protection: tracks of unreachable folders are kept instead of being
+  removed from the library
+- Scan result in the status line (`+NEW ~CHANGED -REMOVED`)
+- The current selection is restored after a rescan
+#### Search
+ 
+- Search field in the LIBRARY display (click or **CTRL+F**)
+- All words of the query must match
+- Results are shown as one list: `Artist - Title [Album]`
+- Search is delayed until typing pauses (debounce, 200 ms)
+- `NO MATCHES` / `SEARCHING ...` hints
+#### Adding to the Playlist
+ 
+- **ADD TO PLAYLIST** adds the selected track, or the whole album / all search
+  results if no track is selected
+- Double-click or ENTER on a track adds it to the playlist
+- Tracks are added instantly from the library data (no tags are read again)
+- Status messages such as `ADDED: <title>` disappear after 4 seconds
+#### Keyboard
+ 
+- LIBRARY: UP / DOWN move the selection, LEFT / RIGHT switch the column,
+  ENTER adds to the playlist, ESC clears the search or leaves FOLDERS,
+  DELETE removes the selected folder (FOLDERS)
+- While the search field has the focus, all keys go to the search field
+  (no accidental play/stop/mute while typing)
+### Changed
+ 
+- The former RESERVE menu button is now **LIBRARY**
+- Number keys follow the order of the menu buttons:
+  1 Playlist, 2 Trackinfo, **3 Library**, 4 Settings, 5 Visuals, 6 Equalizer
+### Technical
+ 
+- Added Gson 2.11.0 dependency
+- New package `library`: `LibraryStore`, `LibraryScanner`, `MediaLibrary`
+- New model class `LibraryEntry` (serializable library entry, conversion
+  from/to `Track`)
+- New display `LibraryDisplay`
+- The library is stored in `library.json` in the configuration directory;
+  saving is atomic (via a temporary file), a damaged file is kept as `.broken`
+- `MediaLibrary` uses immutable lists (copy-on-write), so the user interface
+  can keep reading while a scan is running in the background
+- Library keys are handled before the global key bindings
+  (chain of responsibility); text input uses `KEY_TYPED` events
+
+---
+
 ## [0.3.0] - 2026-10-15
 
 Completion of the open features, new formats and many bug fixes.

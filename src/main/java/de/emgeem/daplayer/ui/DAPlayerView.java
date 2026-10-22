@@ -443,9 +443,10 @@ public class DAPlayerView extends StackPane {
             case R -> toggleRepeat();
             case DIGIT1, NUMPAD1 -> display.showTrackList();
             case DIGIT2, NUMPAD2 -> display.showTrackInfo();
-            case DIGIT3, NUMPAD3 -> display.showSettings();
-            case DIGIT4, NUMPAD4 -> display.showVisuals();
-            case DIGIT5, NUMPAD5 -> display.showEqualizer();
+            case DIGIT3, NUMPAD3 -> display.showLibrary();
+            case DIGIT4, NUMPAD4 -> display.showSettings();
+            case DIGIT5, NUMPAD5 -> display.showVisuals();
+            case DIGIT6, NUMPAD6 -> display.showEqualizer();
             default -> {return false;}
         }
         return true;

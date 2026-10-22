@@ -1,15 +1,34 @@
 # DAPlayer
+![Start](docs/screenshots/start.png)
 
 DAPlayer is a JavaFX-based desktop audio player for playing and managing
 WAV, MP3, FLAC, OGG, Opus, M4A/AAC, AIFF, WMA, APE and WavPack files as well
-as network streams (internet radio).
+as network streams (internet radio). A built-in music library keeps track of
+all songs in your music folders and makes them searchable.
 
 The project is developed as a native desktop application and is intended
 to run locally without SaaS dependencies.
 
+The entire player interface is drawn by hand on JavaFX canvases in the style
+of a hi-fi component; no standard JavaFX controls are used inside the player.
+
 ## Version
 
-Current version: **0.3.0**
+Current version: **0.4.0**
+
+## Screenshots
+
+| Playlist | Track information |
+|---|---|
+| ![Playlist](docs/screenshots/playlist.png) | ![Track information](docs/screenshots/trackinfo.png) |
+
+| Music library | Color settings |
+|---|---|
+| ![Music library](docs/screenshots/library.png) | ![Color settings](docs/screenshots/color-settings.png) |
+
+| Visuals | Equalizer |
+|---|---|
+| ![Visuals](docs/screenshots/visuals.png) | ![Equalizer](docs/screenshots/equalizer.png) |
 
 ## Features
 
@@ -29,6 +48,23 @@ Current version: **0.3.0**
 - Audio output device selection
 - Shuffle playback mode
 - Repeat playback mode
+
+### Music Library
+
+- LIBRARY display with three columns: **ARTISTS | ALBUMS | TITLES**
+- Albums with year, tracks with track number and duration
+- Library folders are managed in the **FOLDERS** view (add / remove);
+  unreachable folders are marked **OFFLINE**
+- **RESCAN** runs in the background with progress display and can be cancelled
+- Incremental scan: only new or changed files are read again
+- Offline protection: tracks on disconnected drives are not removed
+- Search field (**CTRL+F**): all words of the query must match, results are
+  shown as `Artist - Title [Album]`
+- **ADD TO PLAYLIST** adds the selected track, the whole album or all search
+  results; double-click / ENTER adds a single track
+- Consistent artist names (most frequent spelling, album artist preferred)
+- Tracks without album tag are grouped by folder name
+- Sorting according to German collation rules
 
 ### Playlist
 
@@ -71,17 +107,21 @@ Current version: **0.3.0**
 | S | Stop |
 | N / PAGE DOWN | Next track |
 | B / PAGE UP | Previous track (restarts the track after 3 s) |
-| LEFT / RIGHT | Seek -5 / +5 s (with SHIFT: 30 s) |
+| LEFT / RIGHT | Seek -5 / +5 s (with SHIFT: 30 s); in LIBRARY: switch column |
 | + / - | Volume |
-| UP / DOWN | Volume (in PLAYLIST: move selection) |
-| ENTER / DELETE | Play / remove selected track (PLAYLIST) |
+| UP / DOWN | Volume (in PLAYLIST and LIBRARY: move selection) |
+| ENTER | Play selected track (PLAYLIST) / add to playlist (LIBRARY) |
+| DELETE | Remove selected track (PLAYLIST) / remove selected folder (LIBRARY / FOLDERS) |
+| ESC | Clear search / leave FOLDERS (LIBRARY) |
 | M | Mute |
 | H / R | Shuffle / Repeat |
-| 1 – 5 | Playlist / Trackinfo / Settings / Visuals / Equalizer |
+| 1 – 6 | Playlist / Trackinfo / Library / Settings / Visuals / Equalizer |
+| CTRL+F | Search in the library (LIBRARY) |
 | CTRL+O / CTRL+SHIFT+O | Add files / add folder |
 | CTRL+L | Add location (URL) |
 | CTRL+S / CTRL+Q | Save playlist / quit |
 
+While the library search field has the focus, all keys are used for typing.
 Media keys (play, stop, next, previous, mute, volume) are supported as well.
 The list is also shown under SETTINGS / KEY CONTROLS.
 
@@ -139,6 +179,7 @@ The player uses a custom JavaFX interface with:
 - Start display
 - Track list display
 - Track information display
+- Music library display
 - Settings display
 - Equalizer display
 - Visuals display
@@ -160,6 +201,12 @@ Settings are stored in
 - Linux: `~/.config/emgeem/DAPlayer`
 
 and via Java Preferences (volume, shuffle, repeat, accent color, equalizer).
+
+### Music Library
+
+The library (folders and track data) is stored as `library.json` in the
+settings directory. It is saved atomically via a temporary file; if the file
+is damaged, it is kept as `library.json.broken` and an empty library is used.
 
 ### Audio Device
 
@@ -218,6 +265,7 @@ DAPlayer is built using:
 - JAudioTagger 3.0.1
 - JLayer 1.0.1
 - FFmpeg 8.1.2 via JavaCPP
+- Gson 2.11.0
 
 ## Project Structure
 
@@ -228,7 +276,8 @@ src/main/java/de/emgeem/daplayer/
 │                 PlayerController, VisualizationData, VisualizationListener
 ├── decoder/      AudioDecoder, DecoderManager, WavDecoder, Mp3Decoder,
 │                 FfmpegDecoder, TagReader
-├── model/        Playlist, Track
+├── library/      LibraryStore, LibraryScanner, MediaLibrary
+├── model/        Playlist, Track, LibraryEntry
 ├── playlist/     PlaylistManager
 ├── util/         AppPaths
 └── ui/           DAPlayerView, KeyBindings
@@ -236,8 +285,9 @@ src/main/java/de/emgeem/daplayer/
     ├── control/     MenuButton, OffButton, PlayModeButton, RoundControlButton, VolumeKnob
     ├── painter/     UiColors
     └── display/     PlayerDisplay, StartDisplay, TrackListDisplay, TrackInfoDisplay,
-                     SettingsDisplay, AudioDeviceSettings, AccentColorSettings,
-                     KeyControlsSettings, EqualizerDisplay, VisualsDisplay, ArtworkManager
+                     LibraryDisplay, SettingsDisplay, AudioDeviceSettings,
+                     AccentColorSettings, KeyControlsSettings, EqualizerDisplay,
+                     VisualsDisplay, ArtworkManager
         └── visual/  SpectrumVisualization, WaveformVisualization, VuVisualization, VectorScope
 ```
 
@@ -245,6 +295,12 @@ Resources such as fonts and application icons are located under:
 
 ```text
 src/main/resources/
+```
+
+Screenshots for this README are located under:
+
+```text
+docs/screenshots/
 ```
 
 ## Prerequisites
@@ -266,6 +322,9 @@ Then, install JLayer 1.0.1 into the local Maven repository:
 mvn install:install-file "-Dfile=lib/jlayer-1.0.1.jar" "-DgroupId=javazoom" "-DartifactId=jlayer" "-Dversion=1.0.1" "-Dpackaging=jar"
 ```
 
+All other dependencies (JavaFX, JAudioTagger, FFmpeg, Gson) are downloaded
+automatically by Maven.
+
 ## Building
 
 The project uses Maven.
@@ -282,12 +341,21 @@ To start the application using the JavaFX Maven plugin:
 mvn javafx:run
 ```
 
+## Getting Started with the Library
+
+1. Open **LIBRARY** (menu button or key `3`)
+2. Click **FOLDERS**, then **ADD FOLDER** and choose your music folder
+3. The scan starts automatically; the progress is shown in the status line
+4. Click **BACK** (or press ESC) and browse by artist and album,
+   or search with **CTRL+F**
+
 ## Current Development Status
 
-Version **0.3.0** currently provides:
+Version **0.4.0** currently provides:
 
 - WAV, MP3, FLAC, OGG, Opus, M4A, AIFF, WMA, APE, WavPack playback
 - Network streams
+- Music library with folder management, background scan and search
 - Keyboard controls and drag & drop
 - Playlist handling (M3U, session restore)
 - Track navigation
@@ -321,7 +389,21 @@ The project is still under active development. Architecture, user interface and 
 
 Possible future development includes:
 
-- Music library functionality (RESERVE button)
+- Exception list for artist name capitalization (e.g. ABBA, AC/DC)
 - Configurable key bindings
 - Further expansion of the player functionality
 - Further expansion of the user interface
+
+## License
+
+DAPlayer is released under the [MIT License](LICENSE).
+
+Third-party components keep their own licenses:
+
+- JLayer 1.0.1 (`lib/`): GNU Lesser General Public License (LGPL)
+- Fonts (`src/main/resources/fonts/`), all under the SIL Open Font License 1.1:
+  - Exo 2
+  - JetBrains Mono
+  - Saira Stencil
+- Maven dependencies (JavaFX, JAudioTagger, FFmpeg via JavaCPP, Gson):
+  see their respective projects

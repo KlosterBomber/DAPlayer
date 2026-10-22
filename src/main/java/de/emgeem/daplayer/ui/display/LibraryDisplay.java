@@ -1,5 +1,6 @@
 package de.emgeem.daplayer.ui.display;
 
+import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -9,6 +10,7 @@ import de.emgeem.daplayer.model.LibraryEntry;
 import de.emgeem.daplayer.model.Playlist;
 import de.emgeem.daplayer.model.Track;
 import de.emgeem.daplayer.ui.painter.UiColors;
+import javafx.animation.Animation;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
@@ -19,15 +21,16 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.DirectoryChooser;
 import javafx.util.Duration;
 
 public class LibraryDisplay extends DisplayMode {
 
     // GEOMETRIE ++++++++++==========++++++++++
-    private static final int COL_ARTIST = 0, COL_ALBUM = 1, COL_TITLE = 2, COL_SEARCH = 3;
-    private static final double[] COL_LEFT = {20, 330, 680, 20};
-    private static final double[] COL_RIGHT = {320, 670, 1138, 1138};
-    private static final String[] COL_HEADER = {"ARTISTS", "ALBUMS", "TITLES", "RESULTS"};
+    private static final int COL_ARTIST = 0, COL_ALBUM = 1, COL_TITLE = 2, COL_SEARCH = 3, COL_FOLDERS = 4;
+    private static final double[] COL_LEFT = {20, 330, 680, 20, 20};
+    private static final double[] COL_RIGHT = {320, 670, 1138, 1138, 1138};
+    private static final String[] COL_HEADER = {"ARTISTS", "ALBUMS", "TITLES", "RESULTS", "FOLDERS"};
 
     private static final double HEADER_Y = 50;
     private static final double LIST_TOP = 60;
@@ -50,6 +53,7 @@ public class LibraryDisplay extends DisplayMode {
     private static final double[] BUTTON_X = {30, 240, 390};
     private static final double[] BUTTON_W = {200, 140, 140};
     private static final int BTN_ADD = 0, BTN_RESCAN = 1, BTN_FOLDERS = 2;
+    private static final int BTN_ADD_FOLDER = 0, BTN_REMOVE_FOLDER = 1, BTN_BACK = 2;
     private static final double SCAN_STATUS_X = 550;
 
     // Monospace-Schrift: jedes Zeichen ist gleich breit
@@ -59,7 +63,7 @@ public class LibraryDisplay extends DisplayMode {
     // FELDER ++++++++++==========++++++++++
     private final Canvas canvas;
     private final Font displayFont;
-    private final double[] scrollOffset = new double[4];
+    private final double[] scrollOffset = new double[5];
     private final PauseTransition messageTimer = new PauseTransition(Duration.seconds(4));
     private final PauseTransition searchTimer = new PauseTransition(Duration.millis(200));
 
@@ -79,6 +83,10 @@ public class LibraryDisplay extends DisplayMode {
     private int pressedButton = -1;
     private boolean scanning;
     private String statusMessage;
+    private boolean folderMode;
+    private List<String> folders = List.of();
+    private List<String> folderStates = List.of();
+    private int selectedFolder = -1;
 
     // KONSTRUKTOR ++++++++++==========++++++++++
     public LibraryDisplay(Font displayFont) {
@@ -90,9 +98,13 @@ public class LibraryDisplay extends DisplayMode {
             statusMessage = null;
             draw();
         });
+        searchTimer.setOnFinished(e -> {
+            updateSearch();
+            draw();
+        });
         canvas.setOnMousePressed(e -> {
             if (e.getButton() != MouseButton.PRIMARY) {return;}
-            if (isInSearchField(e.getX(), e.getY())) {
+            if (!folderMode && isInSearchField(e.getX(), e.getY())) {
                 searchFocused = true;
                 draw();
                 return;
@@ -113,6 +125,7 @@ public class LibraryDisplay extends DisplayMode {
                 case COL_ALBUM -> {if (row != selectedAlbum) {selectAlbum(row);}}
                 case COL_TITLE -> selectedTrack = row;
                 case COL_SEARCH -> selectedResult = row;
+                case COL_FOLDERS -> selectedFolder = row;
                 default -> { }
             }
             draw();
@@ -129,10 +142,19 @@ public class LibraryDisplay extends DisplayMode {
             boolean inside = button >= 0 && buttonAt(e.getX(), e.getY()) == button;
             draw();
             if (!inside || library == null) {return;}
+            if (folderMode) {
+                switch (button) {
+                    case BTN_ADD_FOLDER -> chooseFolder();
+                    case BTN_REMOVE_FOLDER -> removeSelectedFolder();
+                    case BTN_BACK -> showFolders(false);
+                    default -> { }
+                }
+                return;
+            }
             switch (button) {
                 case BTN_ADD -> addSelectionToPlaylist();
                 case BTN_RESCAN -> {if (scanning) {library.cancelScan();} else {startRescan();}}
-                case BTN_FOLDERS -> { }   // kommt in 5f
+                case BTN_FOLDERS -> showFolders(true);
                 default -> { }
             }
         });
@@ -174,9 +196,61 @@ public class LibraryDisplay extends DisplayMode {
         activeColumn = isSearching() ? COL_SEARCH : COL_ARTIST;
     }
     private void clearSearch() {
+        searchTimer.stop();
         searchQuery = "";
         searchFocused = false;
         updateSearch();
+    }
+
+    // ORDNER ++++++++++==========++++++++++
+    private boolean isColumnMode() {return !folderMode && !isSearching();}
+    private void showFolders(boolean show) {
+        if (show) {
+            clearSearch();
+            reloadFolders();
+            activeColumn = COL_FOLDERS;
+        } else {
+            activeColumn = COL_ARTIST;
+        }
+        folderMode = show;
+        draw();
+    }
+    /** Liest die Ordnerliste und prüft einmalig, welche Ordner erreichbar sind. */
+    private void reloadFolders() {
+        folders = library == null ? List.of() : library.getFolders();
+        folderStates = folders.stream()
+                              .map(f -> new File(f).isDirectory() ? "" : "OFFLINE")
+                              .toList();
+        if (selectedFolder >= folders.size()) {selectedFolder = folders.size() - 1;}
+        scrollOffset[COL_FOLDERS] = Math.min(scrollOffset[COL_FOLDERS], maxScroll(COL_FOLDERS));
+    }
+    private void chooseFolder() {
+        if (scanning) {
+            showMessage("WAIT FOR SCAN TO FINISH");
+            return;
+        }
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Add library folder");
+        File folder = chooser.showDialog(getScene().getWindow());
+        if (folder == null) {return;}
+        if (!library.addFolder(folder.getAbsolutePath())) {
+            showMessage("FOLDER ALREADY ADDED");
+            return;
+        }
+        reloadFolders();
+        selectedFolder = folders.size() - 1;
+        ensureVisible(COL_FOLDERS, selectedFolder);
+        startRescan();
+    }
+    private void removeSelectedFolder() {
+        if (scanning) {
+            showMessage("WAIT FOR SCAN TO FINISH");
+            return;
+        }
+        if (selectedFolder < 0 || selectedFolder >= folders.size()) {return;}
+        library.removeFolder(folders.get(selectedFolder));
+        reloadFolders();
+        startRescan();
     }
 
     // AKTIONEN ++++++++++==========++++++++++
@@ -224,6 +298,7 @@ public class LibraryDisplay extends DisplayMode {
     private void scanFinished(String text) {
         scanning = false;
         reloadKeepingSelection();
+        reloadFolders();
         if (isSearching()) {
             results = library.search(searchQuery);
             selectedResult = -1;
@@ -259,7 +334,7 @@ public class LibraryDisplay extends DisplayMode {
     public boolean handleKey(KeyEvent e) {
         if (library == null) {return false;}
         if (e.isShortcutDown()) {
-            if (e.getCode() != KeyCode.F) {return false;}
+            if (e.getCode() != KeyCode.F || folderMode) {return false;}
             searchFocused = true;
             draw();
             return true;
@@ -269,7 +344,7 @@ public class LibraryDisplay extends DisplayMode {
                 case BACK_SPACE -> {
                     if (!searchQuery.isEmpty()) {
                         searchQuery = searchQuery.substring(0, searchQuery.length() - 1);
-                        updateSearch();
+                        searchTimer.playFromStart();
                     }
                 }
                 case ESCAPE -> clearSearch();
@@ -288,12 +363,20 @@ public class LibraryDisplay extends DisplayMode {
         switch (e.getCode()) {
             case UP -> moveSelection(-1);
             case DOWN -> moveSelection(1);
-            case LEFT -> {if (!isSearching()) {activeColumn = Math.max(COL_ARTIST, activeColumn - 1);}}
-            case RIGHT -> {if (!isSearching()) {activeColumn = Math.min(COL_TITLE, activeColumn + 1);}}
-            case ENTER -> addSelectionToPlaylist();
+            case LEFT -> {if (isColumnMode()) {activeColumn = Math.max(COL_ARTIST, activeColumn - 1);}}
+            case RIGHT -> {if (isColumnMode()) {activeColumn = Math.min(COL_TITLE, activeColumn + 1);}}
+            case ENTER -> {
+                if (folderMode) {return false;}
+                addSelectionToPlaylist();
+            }
+            case DELETE -> {
+                if (!folderMode) {return false;}
+                removeSelectedFolder();
+            }
             case ESCAPE -> {
-                if (!isSearching()) {return false;}
-                clearSearch();
+                if (folderMode) {showFolders(false);}
+                else if (isSearching()) {clearSearch();}
+                else {return false;}
             }
             default -> {return false;}
         }
@@ -308,7 +391,7 @@ public class LibraryDisplay extends DisplayMode {
         if (Character.isISOControl(c)) {return true;}
         if (searchQuery.length() >= MAX_QUERY) {return true;}
         searchQuery += character;
-        updateSearch();
+        searchTimer.playFromStart();
         draw();
         return true;
     }
@@ -320,6 +403,7 @@ public class LibraryDisplay extends DisplayMode {
             case COL_ALBUM -> selectedAlbum;
             case COL_TITLE -> selectedTrack;
             case COL_SEARCH -> selectedResult;
+            case COL_FOLDERS -> selectedFolder;
             default -> -1;
         };
         int target = current < 0 ? 0 : Math.max(0, Math.min(count - 1, current + delta));
@@ -329,6 +413,7 @@ public class LibraryDisplay extends DisplayMode {
             case COL_ALBUM -> selectAlbum(target);
             case COL_TITLE -> selectedTrack = target;
             case COL_SEARCH -> selectedResult = target;
+            case COL_FOLDERS -> selectedFolder = target;
             default -> { }
         }
         ensureVisible(activeColumn, target);
@@ -357,7 +442,9 @@ public class LibraryDisplay extends DisplayMode {
         gc.setLineWidth(1);
         gc.setEffect(UiColors.displayGlow());
 
-        if (isSearching()) {
+        if (folderMode) {
+            gc.fillText(COL_HEADER[COL_FOLDERS] + " (" + folders.size() + ")", COL_LEFT[COL_FOLDERS] + 10, HEADER_Y);
+        } else if (isSearching()) {
             gc.fillText(COL_HEADER[COL_SEARCH] + " (" + results.size() + ")", COL_LEFT[COL_SEARCH] + 10, HEADER_Y);
         } else {
             // Spaltenköpfe mit Anzahl, aktive Spalte hell
@@ -371,14 +458,16 @@ public class LibraryDisplay extends DisplayMode {
             gc.strokeLine(COL_RIGHT[COL_ARTIST] + 5, LIST_TOP, COL_RIGHT[COL_ARTIST] + 5, LIST_BOTTOM);
             gc.strokeLine(COL_RIGHT[COL_ALBUM] + 5, LIST_TOP, COL_RIGHT[COL_ALBUM] + 5, LIST_BOTTOM);
         }
-        drawSearchField(gc);
+        if (!folderMode) {drawSearchField(gc);}
 
         // Linien oben und unten
         gc.strokeLine(20, 55, COL_RIGHT[COL_TITLE], 55);
         gc.strokeLine(20, 345, COL_RIGHT[COL_TITLE], 345);
 
         // Buttons
-        String[] labels = {"ADD TO PLAYLIST", scanning ? "CANCEL" : "RESCAN", "FOLDERS"};
+        String[] labels = folderMode
+                ? new String[] {"ADD FOLDER", "REMOVE", "BACK"}
+                : new String[] {"ADD TO PLAYLIST", scanning ? "CANCEL" : "RESCAN", "FOLDERS"};
         for (int i = 0; i < labels.length; i++) {
             SettingsDisplay.drawSubmenuButton(gc, displayFont, BUTTON_X[i], BUTTON_Y, BUTTON_W[i], BUTTON_HEIGHT, labels[i], i == pressedButton);
         }
@@ -392,17 +481,28 @@ public class LibraryDisplay extends DisplayMode {
 
         // Listen ohne Glow, wie in TrackListDisplay
         gc.setEffect(null);
+        if (folderMode) {
+            if (folders.isEmpty()) {
+                gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
+                gc.fillText("NO FOLDERS  -  ADD A FOLDER TO BUILD YOUR LIBRARY", 30, 120);
+            }
+            drawColumn(gc, COL_FOLDERS, folders, folderStates, selectedFolder);
+            return;
+        }
         if (isSearching()) {
-            if (results.isEmpty()) {
+            if (results.isEmpty() && searchTimer.getStatus() != Animation.Status.RUNNING) {
                 gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
                 gc.fillText("NO MATCHES FOR \"" + searchQuery.strip().toUpperCase() + "\"", 30, 120);
+            } else if (results.isEmpty()) {
+                gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
+                gc.fillText("SEARCHING ...", 30, 120);
             }
             drawColumn(gc, COL_SEARCH, resultTexts(), durations(results), selectedResult);
             return;
         }
         if (library != null && artists.isEmpty()) {
             gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
-            gc.fillText("LIBRARY IS EMPTY  -  ADD A FOLDER AND RESCAN", 30, 120);
+            gc.fillText("LIBRARY IS EMPTY  -  CLICK FOLDERS TO ADD ONE", 30, 120);
         }
         drawColumn(gc, COL_ARTIST, artists, null, selectedArtist);
         drawColumn(gc, COL_ALBUM, albumTexts(), null, selectedAlbum);
@@ -466,6 +566,7 @@ public class LibraryDisplay extends DisplayMode {
 
     // HIT-TESTS / SCROLLEN ++++++++++==========++++++++++
     private int columnAt(double x) {
+        if (folderMode) {return x >= COL_LEFT[COL_FOLDERS] && x <= COL_RIGHT[COL_FOLDERS] ? COL_FOLDERS : -1;}
         if (isSearching()) {return x >= COL_LEFT[COL_SEARCH] && x <= COL_RIGHT[COL_SEARCH] ? COL_SEARCH : -1;}
         for (int c = 0; c < 3; c++) {if (x >= COL_LEFT[c] && x <= COL_RIGHT[c]) {return c;}}
         return -1;
@@ -490,6 +591,7 @@ public class LibraryDisplay extends DisplayMode {
             case COL_ALBUM -> albums.size();
             case COL_TITLE -> tracks.size();
             case COL_SEARCH -> results.size();
+            case COL_FOLDERS -> folders.size();
             default -> 0;
         };
     }
