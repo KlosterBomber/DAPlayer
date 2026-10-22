@@ -8,7 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.emgeem</groupId>
     <artifactId>daplayer</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
     <name>DAPlayer</name>
     <description>Digital Audio Player</description>
     <packaging>jar</packaging>
@@ -62,7 +62,40 @@
                     <mainClass>de.emgeem.daplayer.Main</mainClass>
                 </configuration>
             </plugin>
+            <!-- Eigenes JAR nach target/libs, mit Startklasse im Manifest -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <mainClass>de.emgeem.daplayer.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
 
+            <!-- Alle Abhängigkeiten nach target/libs kopieren -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-libs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
     </build>

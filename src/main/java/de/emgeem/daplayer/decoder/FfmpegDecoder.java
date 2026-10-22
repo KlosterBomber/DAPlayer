@@ -212,7 +212,7 @@ public class FfmpegDecoder implements AudioDecoder {
         outLayout = new AVChannelLayout();
         avutil.av_channel_layout_default(outLayout, outChannels);
         format = new AudioFormat(outSampleRate, 16, outChannels, true, false);
-
+     
         packet = avcodec.av_packet_alloc();
         frame = avutil.av_frame_alloc();
         if (packet == null || frame == null) {
@@ -300,6 +300,7 @@ public class FfmpegDecoder implements AudioDecoder {
         try {
             int maxOut = swresample.swr_get_out_samples(swrContext, inSamples);
             ensureOutBuffer(Math.max(maxOut, inSamples) + 32);
+
             int converted = swresample.swr_convert(swrContext, outPointer, outBufferSamples, inPointer, inSamples);
             if (converted < 0) {throw new Exception("Resampling fehlgeschlagen: " + errorText(converted));}
             byte[] bytes = new byte[converted * outChannels * 2];
@@ -369,7 +370,8 @@ public class FfmpegDecoder implements AudioDecoder {
         if (outBuffer != null) {outBuffer.close();}
         outBufferSamples = samples;
         outBuffer = new BytePointer((long) samples * outChannels * 2);
-        outPointer = new PointerPointer<>(outBuffer);
+        outPointer = new PointerPointer<>(1);
+        outPointer.put(0, outBuffer);
     }
 
     private byte[] flushResampler() {

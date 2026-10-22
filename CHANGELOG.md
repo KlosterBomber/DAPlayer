@@ -2,6 +2,24 @@
 
 All notable changes to the DAPlayer project are documented in this file.
 
+## [0.4.1] - 2026-10-22
+
+Bug fix release.
+
+### Fixed
+
+- FFmpeg playback (WMA, FLAC, OGG, Opus, M4A/AAC, AIFF, APE, WavPack and
+  network streams) could corrupt memory and crash the application.
+  The output pointer for the resampler was created with the wrong
+  `PointerPointer` constructor, so `swr_convert` wrote the decoded audio to a
+  random memory address. Depending on memory layout and garbage collection,
+  this went unnoticed or crashed the player after a few seconds
+  (`EXCEPTION_ACCESS_VIOLATION` / `STATUS_HEAP_CORRUPTION`).
+  The bug existed since 0.3.0 and became visible with the higher memory
+  activity of the music library in 0.4.0.
+
+---
+
 ## [0.4.0] - 2026-10-22
  
 Music library: a persistent, searchable collection of all tracks in the
@@ -366,5 +384,5 @@ MAJOR.MINOR.PATCH
 The project is currently at:
 
 ```text
-0.3.0
+0.4.1
 ```

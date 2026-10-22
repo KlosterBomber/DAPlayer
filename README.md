@@ -14,7 +14,7 @@ of a hi-fi component; no standard JavaFX controls are used inside the player.
 
 ## Version
 
-Current version: **0.4.0**
+Current version: **0.4.1**
 
 ## Screenshots
 
@@ -351,7 +351,7 @@ mvn javafx:run
 
 ## Current Development Status
 
-Version **0.4.0** currently provides:
+Version **0.4.1** currently provides:
 
 - WAV, MP3, FLAC, OGG, Opus, M4A, AIFF, WMA, APE, WavPack playback
 - Network streams
