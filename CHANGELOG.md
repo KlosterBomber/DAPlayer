@@ -2,6 +2,55 @@
 
 All notable changes to the DAPlayer project are documented in this file.
 
+## [0.4.2] - 2026-10-27
+
+Compilation support for the music library, Musepack and several fixes.
+
+### Added
+
+- Musepack (`.mpc`) playback and library support (via FFmpeg)
+- Compilations are detected automatically: album artist such as
+  "Various Artists" / "V.A.", or - without album artist - no single artist
+  contributes at least half of the tracks (albums with "feat." tracks are
+  therefore not treated as compilations)
+- New entry **VARIOUS ARTISTS** in the LIBRARY with all compilations
+- Compilations are also listed under every artist that appears on them
+- Selecting a compilation shows the complete album as `Artist - Title`;
+  tracks of other artists are dimmed when a single artist is selected
+- Search results show the artist of the individual track
+
+### Changed
+
+- LIBRARY lists use a medium font size (16 px) and new column widths,
+  so considerably longer artist, album and track names fit
+- Shorter scan result in the status line: `+NEW ~CHG -DEL`
+- More compact total duration in the PLAYLIST and LIBRARY header / status line
+
+### Fixed
+
+- The player could no longer be closed if an error occurred during shutdown
+  (`Platform.exit()` is now always called; saving errors no longer skip
+  stopping playback)
+- LIBRARY: the status message overlapped the track count with large
+  libraries; its length is now calculated from the available space
+- Albums with the same name were merged (e.g. two "Live" albums of one
+  artist); albums are now identified by folder and name
+- Compilations without album artist were split into one single-track album
+  per artist
+
+### Technical
+
+- `MediaLibrary` builds an immutable index (artists, albums, tracks, total
+  duration) once after loading or scanning; all queries are simple lookups,
+  and a single `volatile` field keeps the snapshot consistent
+- The total duration is no longer summed up on every redraw
+- `AlbumInfo` contains a unique `key` and a `compilation` flag;
+  `getTracks(albumKey)` replaces `getTracks(artist, album)`
+- New `LibraryEntry.getTrackArtist()`
+- New medium display font (`displayFontMed`, 16 px)
+
+---
+
 ## [0.4.1] - 2026-10-22
 
 Bug fix release.
@@ -384,5 +433,5 @@ MAJOR.MINOR.PATCH
 The project is currently at:
 
 ```text
-0.4.1
+0.4.2
 ```

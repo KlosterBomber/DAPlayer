@@ -19,6 +19,7 @@ import javafx.scene.text.Font;
 public class PlayerDisplay extends StackPane {
 
     private final Font displayFont;
+    private final Font displayFontMed;
     private final Font displayFontSmall;
     private final Canvas backgroundCanvas;
     private final StartDisplay startDisplay;
@@ -43,13 +44,14 @@ public class PlayerDisplay extends StackPane {
         backgroundCanvas = new Canvas();
         getChildren().add(backgroundCanvas);
         displayFont = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),18);
+        displayFontMed = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),16);
         displayFontSmall = Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"),14);
 
         startDisplay = new StartDisplay();
         trackListDisplay = new TrackListDisplay(displayFont, addFileAction, addFolderAction, savePlaylistAction, loadPlaylistAction);
         trackInfoDisplay = new TrackInfoDisplay(displayFont);
         trackInfoDisplay.setSeekAction(seekAction);
-        libraryDisplay = new LibraryDisplay(displayFont);
+        libraryDisplay = new LibraryDisplay(displayFont, displayFontMed);
         settingsDisplay = new SettingsDisplay(displayFont, displayFontSmall, audioDeviceManager, this::redraw);
         visualsDisplay = new VisualsDisplay(displayFont);
         equalizerDisplay = new EqualizerDisplay(displayFont, equalizer);

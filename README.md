@@ -14,7 +14,7 @@ of a hi-fi component; no standard JavaFX controls are used inside the player.
 
 ## Version
 
-Current version: **0.4.1**
+Current version: **0.4.2**
 
 ## Screenshots
 
@@ -207,6 +207,7 @@ and via Java Preferences (volume, shuffle, repeat, accent color, equalizer).
 The library (folders and track data) is stored as `library.json` in the
 settings directory. It is saved atomically via a temporary file; if the file
 is damaged, it is kept as `library.json.broken` and an empty library is used.
+Compilations are detected automatically and grouped under VARIOUS ARTISTS.
 
 ### Audio Device
 
@@ -237,11 +238,12 @@ Currently supported:
 - AIFF
 - WMA
 - APE, WavPack
+- Musepack
 - Network streams (http, https)
 
 ### FFmpeg formats
 
-WMA, FLAC, OGG, Opus, M4A/AAC, AIFF, APE, WavPack and network streams are
+WMA, FLAC, OGG, Opus, M4A/AAC, AIFF, APE, WavPack, Musepack and network streams are
 decoded by `FfmpegDecoder` using FFmpeg through JavaCPP. Any sample format is
 converted to 16-bit PCM with libswresample.
 
@@ -351,9 +353,9 @@ mvn javafx:run
 
 ## Current Development Status
 
-Version **0.4.1** currently provides:
+Version **0.4.2** currently provides:
 
-- WAV, MP3, FLAC, OGG, Opus, M4A, AIFF, WMA, APE, WavPack playback
+- WAV, MP3, FLAC, OGG, Opus, M4A, AIFF, WMA, APE, WavPack, musepack playback
 - Network streams
 - Music library with folder management, background scan and search
 - Keyboard controls and drag & drop

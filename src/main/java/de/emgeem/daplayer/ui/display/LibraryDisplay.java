@@ -3,6 +3,7 @@ package de.emgeem.daplayer.ui.display;
 import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntPredicate;
 
 import de.emgeem.daplayer.library.LibraryScanner;
 import de.emgeem.daplayer.library.MediaLibrary;
@@ -62,6 +63,7 @@ public class LibraryDisplay extends DisplayMode {
     // FELDER ++++++++++==========++++++++++
     private final Canvas canvas;
     private final Font displayFont;
+    private final Font listFont;
     private final double[] scrollOffset = new double[5];
     private final PauseTransition messageTimer = new PauseTransition(Duration.seconds(4));
     private final PauseTransition searchTimer = new PauseTransition(Duration.millis(200));
@@ -88,8 +90,9 @@ public class LibraryDisplay extends DisplayMode {
     private int selectedFolder = -1;
 
     // KONSTRUKTOR ++++++++++==========++++++++++
-    public LibraryDisplay(Font displayFont) {
+    public LibraryDisplay(Font displayFont, Font listFont) {
         this.displayFont = displayFont;
+        this.listFont = listFont;
         canvas = new Canvas();
         getChildren().add(canvas);
         messageTimer.setOnFinished(e -> {
@@ -182,8 +185,18 @@ public class LibraryDisplay extends DisplayMode {
     private void selectAlbum(int index) {
         selectedAlbum = index;
         selectedTrack = -1;
-        tracks = index < 0 ? List.of() : library.getTracks(artists.get(selectedArtist), albums.get(index).name());
+        tracks = index < 0 ? List.of() : library.getTracks(albums.get(index).key());
         scrollOffset[COL_TITLE] = 0;
+    }
+
+    private boolean isCompilationSelected() {return selectedAlbum >= 0 && selectedAlbum < albums.size() && albums.get(selectedAlbum).compilation();}
+
+    private IntPredicate otherArtistRows() {
+        if (!isCompilationSelected() || selectedArtist < 0) {return null;}
+        String artist = artists.get(selectedArtist);
+        if (MediaLibrary.isVariousArtists(artist)) {return null;}
+        String key = LibraryEntry.toKey(artist);
+        return row -> !LibraryEntry.toKey(tracks.get(row).getTrackArtist()).equals(key);
     }
 
     // SUCHE ++++++++++==========++++++++++
@@ -307,7 +320,7 @@ public class LibraryDisplay extends DisplayMode {
     /** Lädt die Listen neu und stellt Interpret und Album anhand der Namen wieder her. */
     private void reloadKeepingSelection() {
         String artist = selectedArtist >= 0 ? artists.get(selectedArtist) : null;
-        String album = selectedAlbum >= 0 ? albums.get(selectedAlbum).name() : null;
+        String albumKey = selectedAlbum >= 0 ? albums.get(selectedAlbum).key() : null;
         double artistScroll = scrollOffset[COL_ARTIST];
         reloadArtists();
         int artistIndex = artist == null ? -1 : artists.indexOf(artist);
@@ -315,7 +328,7 @@ public class LibraryDisplay extends DisplayMode {
         selectArtist(artistIndex);
         scrollOffset[COL_ARTIST] = Math.min(artistScroll, maxScroll(COL_ARTIST));
         for (int i = 0; i < albums.size(); i++) {
-            if (albums.get(i).name().equals(album)) {
+            if (albums.get(i).key().equals(albumKey)) {
                 selectAlbum(i);
                 return;
             }
@@ -492,7 +505,7 @@ public class LibraryDisplay extends DisplayMode {
                 gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
                 gc.fillText("NO FOLDERS  -  ADD A FOLDER TO BUILD YOUR LIBRARY", 30, 120);
             }
-            drawColumn(gc, COL_FOLDERS, folders, folderStates, selectedFolder);
+            drawColumn(gc, COL_FOLDERS, folders, folderStates, selectedFolder, null);
             return;
         }
         if (isSearching()) {
@@ -503,16 +516,16 @@ public class LibraryDisplay extends DisplayMode {
                 gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
                 gc.fillText("SEARCHING ...", 30, 120);
             }
-            drawColumn(gc, COL_SEARCH, resultTexts(), durations(results), selectedResult);
+            drawColumn(gc, COL_SEARCH, resultTexts(), durations(results), selectedResult, null);
             return;
         }
         if (library != null && artists.isEmpty()) {
             gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.45));
             gc.fillText("LIBRARY IS EMPTY  -  CLICK FOLDERS TO ADD ONE", 30, 120);
         }
-        drawColumn(gc, COL_ARTIST, artists, null, selectedArtist);
-        drawColumn(gc, COL_ALBUM, albumTexts(), null, selectedAlbum);
-        drawColumn(gc, COL_TITLE, trackTexts(), durations(tracks), selectedTrack);
+        drawColumn(gc, COL_ARTIST, artists, null, selectedArtist, null);
+        drawColumn(gc, COL_ALBUM, albumTexts(), null, selectedAlbum, null);
+        drawColumn(gc, COL_TITLE, trackTexts(), durations(tracks), selectedTrack, otherArtistRows());
     }
     private void drawSearchField(GraphicsContext gc) {
         Color accent = UiColors.accentLight();
@@ -537,10 +550,11 @@ public class LibraryDisplay extends DisplayMode {
     }
 
     /** Zeichnet eine Spalte; rightTexts (optional) erscheinen rechtsbündig. */
-    private void drawColumn(GraphicsContext gc, int column, List<String> rows, List<String> rightTexts, int selected) {
+    private void drawColumn(GraphicsContext gc, int column, List<String> rows, List<String> rightTexts, int selected, IntPredicate dimmed) {
         double left = COL_LEFT[column];
         double right = COL_RIGHT[column];
-        int maxChars = (int) ((right - left - 20) / CHAR_WIDTH);
+        double charWidth = listFont.getSize() * 0.6;
+        int maxChars = (int) ((right - left - 20) / charWidth);
         if (rightTexts != null) {maxChars -= 7;}
 
         gc.save();
@@ -548,18 +562,21 @@ public class LibraryDisplay extends DisplayMode {
         gc.rect(left, LIST_TOP, right - left, LIST_BOTTOM - LIST_TOP);
         gc.closePath();
         gc.clip();
+        gc.setFont(listFont);
 
         int first = Math.max(0, (int) (scrollOffset[column] / ROW_HEIGHT));
         int last = Math.min(rows.size() - 1, first + VISIBLE_ROWS + 1);
         for (int i = first; i <= last; i++) {
             double rowTop = FIRST_ROW_TOP + i * ROW_HEIGHT - scrollOffset[column];
-            double baseline = rowTop + 17;
+            double baseline = rowTop + 15;
             boolean isSelected = i == selected;
             if (isSelected) {
                 gc.setFill(UiColors.accentLight().deriveColor(0, 1, 1, 0.15));
                 gc.fillRect(left + 5, rowTop, right - left - 10, ROW_HEIGHT);
             }
-            gc.setFill(isSelected ? UiColors.accentLight() : UiColors.accentLight().deriveColor(0, 1, 0.85, 1));
+            Color normal = UiColors.accentLight().deriveColor(0, 1, 0.85, 1);
+            if (dimmed != null && dimmed.test(i)) {normal = UiColors.accentLight().deriveColor(0, 1, 1, 0.4);}
+            gc.setFill(isSelected ? UiColors.accentLight() : normal);
             gc.fillText(TrackListDisplay.limitText(rows.get(i), maxChars), left + 10, baseline);
             if (rightTexts != null) {
                 gc.setTextAlign(TextAlignment.RIGHT);
@@ -623,9 +640,10 @@ public class LibraryDisplay extends DisplayMode {
                      .toList();
     }
     private List<String> trackTexts() {
+        boolean compilation = isCompilationSelected();
         return tracks.stream()
-                     .map(t -> (t.getTrackNumber() > 0 ? String.format("%02d  ", t.getTrackNumber()) : "    ") + t.getDisplayTitle())
-                     .toList();
+                     .map(t -> (t.getTrackNumber() > 0 ? String.format("%02d  ", t.getTrackNumber()) : "    ") 
+                     + (compilation ? t.getTrackArtist() + " - " : "") + t.getDisplayTitle()).toList();
     }
     private static List<String> durations(List<LibraryEntry> entries) {
         return entries.stream()

@@ -8,7 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.emgeem</groupId>
     <artifactId>daplayer</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2</version>
     <name>DAPlayer</name>
     <description>Digital Audio Player</description>
     <packaging>jar</packaging>

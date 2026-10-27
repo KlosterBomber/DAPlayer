@@ -100,4 +100,6 @@ public class LibraryEntry {
     public int getTrackNumber() {return trackNumber;}
     public int getDiscNumber() {return discNumber;}
     public long getDuration() {return duration;}
+
+    public String getTrackArtist() {return !isBlank(artist) ? artist.trim() : getDisplayArtist();}
 }
