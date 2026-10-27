@@ -58,7 +58,6 @@ public class LibraryDisplay extends DisplayMode {
 
     // Monospace-Schrift: jedes Zeichen ist gleich breit
     private static final double CHAR_WIDTH = 18 * 0.6;
-    private static final int MAX_MESSAGE_CHARS = 30;
 
     // FELDER ++++++++++==========++++++++++
     private final Canvas canvas;
@@ -324,7 +323,7 @@ public class LibraryDisplay extends DisplayMode {
     }
     private static String resultText(LibraryScanner.ScanResult r) {
         if (r.cancelled()) {return "SCAN CANCELLED";}
-        String text = "+" + r.added() + " NEW  ~" + r.updated() + " CHANGED  -" + r.removed() + " REMOVED";
+        String text = "+" + r.added() + " NEW  ~" + r.updated() + " CHG  -" + r.removed() + " DEL";
         if (r.offline() > 0) {text += "  (" + r.offline() + " OFFLINE)";}
         return text;
     }
@@ -472,12 +471,19 @@ public class LibraryDisplay extends DisplayMode {
             SettingsDisplay.drawSubmenuButton(gc, displayFont, BUTTON_X[i], BUTTON_Y, BUTTON_W[i], BUTTON_HEIGHT, labels[i], i == pressedButton);
         }
         gc.setFill(UiColors.accentLight());
-        if (statusMessage != null) {gc.fillText(TrackListDisplay.limitText(statusMessage, MAX_MESSAGE_CHARS), SCAN_STATUS_X, STATUS_Y);}
 
-        // Statuszeile unten rechts
+        // Statuszeile rechts: Trackzahl und Gesamtdauer
+        String status = statusText();
+        double statusLeft = COL_RIGHT[COL_TITLE] - 10 - status.length() * CHAR_WIDTH;
         gc.setTextAlign(TextAlignment.RIGHT);
-        gc.fillText(statusText(), COL_RIGHT[COL_TITLE] - 10, STATUS_Y);
+        gc.fillText(status, COL_RIGHT[COL_TITLE] - 10, STATUS_Y);
         gc.setTextAlign(TextAlignment.LEFT);
+
+        // Meldunglinks: nur so lang, wie Platzt bis zum rechten Text ist
+        if (statusMessage != null) {
+            int maxChars = (int) ((statusLeft - 20 - SCAN_STATUS_X) / CHAR_WIDTH);
+            if (maxChars >= 4) {gc.fillText(TrackListDisplay.limitText(statusMessage, maxChars), SCAN_STATUS_X, STATUS_Y);}
+        }
 
         // Listen ohne Glow, wie in TrackListDisplay
         gc.setEffect(null);
@@ -636,7 +642,7 @@ public class LibraryDisplay extends DisplayMode {
         int count = library.getTrackCount();
         String text = count + (count == 1 ? " TRACK" : " TRACKS");
         long total = library.getTotalDurationMillis();
-        if (total > 0) {text += "  /  " + TrackListDisplay.formatDuration(total);}
+        if (total > 0) {text += " / " + TrackListDisplay.formatDuration(total);}
         return text;
     }
 

@@ -76,7 +76,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
             <!-- Alle Abhängigkeiten nach target/libs kopieren -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

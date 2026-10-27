@@ -14,7 +14,7 @@ public class DecoderManager {
 
     /** Alle Dateiendungen, die DAPlayer abspielen kann (klein, ohne Punkt). */
     public static final Set<String> SUPPORTED_EXTENSIONS = new LinkedHashSet<>(List.of(
-        "wav", "mp3", "flac", "wma", "ogg", "oga", "opus", "m4a", "aac", "aiff", "aif", "ape", "wv"
+        "wav", "mp3", "flac", "wma", "ogg", "oga", "opus", "m4a", "aac", "aiff", "aif", "ape", "wv", "mpc"
     ));
 
     private final List<Supplier<AudioDecoder>> factories = new ArrayList<>();

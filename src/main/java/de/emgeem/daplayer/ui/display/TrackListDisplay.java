@@ -216,7 +216,7 @@ public class TrackListDisplay extends DisplayMode {
         for (Track t : playlist.getTracks()) {total += Math.max(0, t.getDuration());}
         if (total <= 0) {return "";}
         long seconds = total / 1000;
-        return String.format("  /  %d:%02d:%02d", seconds / 3600, (seconds / 60) % 60, seconds % 60);
+        return String.format(" / %d:%02d:%02d", seconds / 3600, (seconds / 60) % 60, seconds % 60);
     }
 
     private void drawButton(GraphicsContext gc, double x, double y, double width, double height, String text, int buttonIndex, boolean disabled) {

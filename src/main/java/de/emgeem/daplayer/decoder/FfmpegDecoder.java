@@ -36,7 +36,7 @@ import de.emgeem.daplayer.model.Track;
 public class FfmpegDecoder implements AudioDecoder {
 
     private static final Set<String> EXTENSIONS = Set.of(
-        "wma", "flac", "ogg", "oga", "opus", "m4a", "aac", "aiff", "aif", "ape", "wv"
+        "wma", "flac", "ogg", "oga", "opus", "m4a", "aac", "aiff", "aif", "ape", "wv", "mpc"
     );
     private static volatile boolean networkInitialized;
 

@@ -704,18 +704,21 @@ public class DAPlayerView extends StackPane {
         if (shutDown) {return;}
         shutDown = true;
         try {
-            playlistManager.save(playlist, playlistManager.getSessionFile());
-            prefs.putInt(PREF_SESSION_INDEX, Math.max(0, playlist.getCurrentIndex()));
-            EqualizerSettings.save(equalizer);
-            prefs.flush();
-        } catch (Exception e) {
-            System.err.println("Sitzung konnte nicht gespeichert werden: " + e.getMessage());
+            try {
+                playlistManager.save(playlist, playlistManager.getSessionFile());
+                prefs.putInt(PREF_SESSION_INDEX, Math.max(0, playlist.getCurrentIndex()));
+                EqualizerSettings.save(equalizer);
+                prefs.flush();
+            } catch (Exception e) {
+                System.err.println("Sitzung konnte nicht gespeichert werden: " + e.getMessage());
+            }
+            progressTimer.stop();
+            loadGeneration++;
+            loader.shutdownNow();
+            controller.stop();
+        } finally {
+            Platform.exit();
         }
-        progressTimer.stop();
-        loadGeneration++;
-        loader.shutdownNow();
-        controller.stop();
-        Platform.exit();
     }
 
     private File lastDirectory() {
